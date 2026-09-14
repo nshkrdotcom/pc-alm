@@ -1,0 +1,48 @@
+dataset: synthetic
+output_dir: results/async_dynamics/smoke
+seed: 0
+batch_size: 8
+
+model:
+  width: 6
+  depth: 6
+  activation: tanh
+  input_dim: 12
+  output_dim: 3
+
+data:
+  train_subset: 48
+  test_subset: 16
+
+inference:
+  work_sweep_equivalents: 6
+  reference_budget: 12
+  state_lr: 0.12
+  rho: 1.0
+  alpha: 1.0
+  inner_steps: 1
+  weight_credit_timing: pre_dual_energy
+  diagnostic_interval_sweeps: 1
+  front_thresholds: [0.10, 0.25, 0.50]
+  front_eps: 1.0e-12
+  divergence_threshold: 1.0e6
+
+modes:
+  - mode: sync
+  - mode: random_coordinate
+    scheduler_seed: 11
+  - mode: random_block
+    scheduler_seed: 11
+    block_size: 2
+  - mode: heterogeneous_rates
+    scheduler_seed: 11
+    heterogeneous_rate_strength: 1.0
+  - mode: bounded_staleness
+    scheduler_seed: 11
+    tau_max: 2
+  - mode: fully_async_local
+    scheduler_seed: 11
+    tau_max: 2
+    heterogeneous_rate_strength: 0.75
+
+plots: false
