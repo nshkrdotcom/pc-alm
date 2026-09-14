@@ -1,0 +1,15 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "jax": "0.11.1",
+  "jaxlib": "0.11.1",
+  "numpy": "2.5.3",
+  "backend": "gpu",
+  "devices": [
+    "NVIDIA GeForce RTX 5060 Ti"
+  ],
+  "uv": "uv 0.12.6 (x86_64-unknown-linux-gnu)",
+  "baseline_commit": "660747f61a8a7e547c0ecd2c48c8883380a7d1f6",
+  "overlay_commit": "26204506c5cc9a0977c4b69150182b1df4b868a8",
+  "command_prefix": "XLA_PYTHON_CLIENT_PREALLOCATE=false uv run --no-sync --python 3.12",
+  "final_working_commit": "c1fef45815c645c17376c1fc0ee4904ebee4172d"
+}

@@ -1,0 +1,38 @@
+Script completed
+Wall time 0.0 seconds
+Output:
+
+{"chunk_id":"dbd261","wall_time_seconds":0.000001954,"exit_code":0,"original_token_count":477,"output":"2 sweep original seconds 28.30310874299994\n         23632905 function calls (23140779 primitive calls) in 28.211 seconds\n\n   Ordered by: cumulative time\n   List reduced from 1364 to 12 due to restriction <12>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n        1    0.006    0.006   28.303   28.303 /home/home/p/g/n/pc-alm/pcalm/async_inference.py:264(run_async_inference)\n27577/199    0.068    0.000   21.075    0.106 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/traceback_util.py:190(reraise_with_filtered_traceback)\n       62    0.000    0.000   19.793    0.319 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/api.py:478(grad_f)\n       62    0.002    0.000   19.762    0.319 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/api.py:540(value_and_grad_f)\n113398/52973    0.440    0.000   16.501    0.000 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/core.py:679(bind)\n       62    0.016    0.000   14.661    0.236 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/api.py:1638(vjp)\n       62    0.003    0.000   14.619    0.236 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/interpreters/ad.py:226(linearize)\n       62    0.000    0.000   14.458    0.233 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/api_util.py:210(f_wrapped)\n       62    0.005    0.000   14.458    0.233 /home/home/p/g/n/pc-alm/pcalm/async_inference.py:289(energy)\n       62    0.056    0.001   14.453    0.233 /home/home/p/g/n/pc-alm/pcalm/inference.py:55(al_energy_shifted)\n115594/60545    0.198    0.000   13.977    0.000 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/core.py:728(bind_with_trace)\n23410/23407    0.068    0.000   12.103    0.001 /home/home/p/g/n/pc-alm/.venv/lib/python3.12/site-packages/jax/_src/pjit.py:256(cache_miss)\n\n\n"}
+
+Script completed
+Wall time 0.1 seconds
+Output:
+
+{"chunk_id":"c12a29","wall_time_seconds":0.00000318,"exit_code":0,"original_token_count":310,"output":"runtime 100.57297877000019\nrandom_coordinate_seed101 state distance 0.1961340308189392 dual distance 0.35948292408103133\nsync state distance 0.0 dual distance 0.0\nsync front .25 [('0.0', '0', '0'), ('4.0', '2', '2'), ('8.0', '4', '4'), ('12.0', '6', '6'), ('16.0', '7', '7'), ('20.0', '9', '9'), ('24.0', '11', '11'), ('28.0', '13', '13'), ('32.0', '15', '15'), ('36.0', '17', '17'), ('40.0', '19', '19'), ('44.0', '20', '20'), ('48.0', '22', '22'), ('52.0', '24', '24'), ('56.0', '26', '26'), ('60.0', '28', '28'), ('64.0', '31', '31')]\ncos [('0.0', 0.704), ('8.0', 0.731), ('16.0', 0.755), ('24.0', 0.774), ('32.0', 0.79), ('40.0', 0.805), ('48.0', 0.824), ('56.0', 0.878), ('64.0', 0.946)]\nrandom_coordinate front .25 [('0.0', '0', '0'), ('4.0', '2', '2'), ('8.0', '5', '5'), ('12.0', '6', '6'), ('16.0', '8', '8'), ('20.0', '10', '10'), ('24.0', '12', '12'), ('28.0', '14', '14'), ('32.0', '15', '15'), ('36.0', '17', '17'), ('40.0', '19', '19'), ('44.0', '21', '21'), ('48.0', '23', '23'), ('52.0', '24', '24'), ('56.0', '26', '26'), ('60.0', '29', '29'), ('64.0', '31', '31')]\ncos [('0.0', 0.704), ('8.0', 0.736), ('16.0', 0.758), ('24.0', 0.775), ('32.0', 0.789), ('40.0', 0.806), ('48.0', 0.822), ('56.0', 0.848), ('64.0', 0.95)]\n"}
+
+Script completed
+Wall time 0.0 seconds
+Output:
+
+{"chunk_id":"2d6a0f","wall_time_seconds":0.000001076,"exit_code":0,"original_token_count":0,"output":""}
+{"chunk_id":"9cb975","wall_time_seconds":0.000002601,"exit_code":0,"original_token_count":80,"output":"  \"runtime_seconds\": 326.28842704,\n  \"seed\": 0,\n  \"status\": \"ok\"\n}\n}\nresults/async_dynamics/study/reference/depth32_seed0 QC PASS reference range 0.854357123374939 1.848621129989624\nsync ok cos 0.9464 early 0.8924 R25 31 t50 32.0 residual 0.1491\nSTUDY_CELL_COMPLETE results/async_dynamics/study/reference/depth32_seed0\n"}
+
+Script completed
+Wall time 0.0 seconds
+Output:
+
+{"chunk_id":"53235b","wall_time_seconds":0.00000207,"exit_code":0,"original_token_count":37,"output":"compiled False seconds 24.03881199000034\ncompiled True seconds 1.8058768370001417\nhighest precision trajectory equivalence PASS, max abs error 0.0\n"}
+
+Script completed
+Wall time 5.1 seconds
+Output:
+
+{"chunk_id":"82f806","wall_time_seconds":5.000824181,"session_id":40065,"original_token_count":0,"output":""}
+{"chunk_id":"61d05a","wall_time_seconds":0.000003564,"exit_code":0,"original_token_count":36,"output":"......................................                                   [100%]\n38 passed in 54.38s\nBackend: gpu; devices: [CudaDevice(id=0)]\n"}
+
+Script completed
+Wall time 0.0 seconds
+Output:
+
+{"chunk_id":"cf28b4","wall_time_seconds":0.000002001,"exit_code":0,"original_token_count":24,"output":"Depth32 full-block/oracle PASS; maximum absolute state/dual difference: 1.6689300537109375e-06\n"}
+{"chunk_id":"d43ab8","wall_time_seconds":0.000003214,"exit_code":0,"original_token_count":95,"output":"Completed random_block_b8_seed101: ok; cosine=0.92725; elapsed=83.6s\nCompleted heterogeneous_rates_h0.5_seed101: ok; cosine=0.92285; elapsed=98.4s\nCompleted heterogeneous_rates_h1.5_seed101: ok; cosine=0.68346; elapsed=113.9s\nCompleted bounded_staleness_tau1_seed101: ok; cosine=0.95021; elapsed=128.6s\nCompleted bounded_staleness_tau4_seed101: ok; cosine=0.94981; elapsed=144.2s\n"}

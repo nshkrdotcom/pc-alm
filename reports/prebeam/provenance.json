@@ -1,0 +1,1440 @@
+{
+  "experimental_source_commit": "c1fef45815c645c17376c1fc0ee4904ebee4172d",
+  "cells": {
+    "replication/depth32_seed0": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.234285,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 101,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 31
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 101,
+            "tau_max": 62
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 8
+          },
+          {
+            "heterogeneous_rate_strength": 1.5,
+            "mode": "heterogeneous_rates",
+            "scheduler_seed": 101
+          }
+        ],
+        "output_dir": "results/prebeam/replication/depth32_seed0",
+        "plots": false,
+        "seed": 0
+      },
+      "raw_sha256": {
+        "analysis.json": "91613f97df3cd786a601d44f686ded0c8e2a9bc64ec491dfbf3860ec6664c653",
+        "summary.json": "f3009a915655c8d096123a09be14aaf8993678928e94a97a3a905183039a0219",
+        "trace.csv": "db9f2509e3d82f8fcf765f22069df23fd036e2902ee264c0152773f5b5c00044",
+        "layer_trace.csv": "f008b2df33e453f96ce35bce52cdee29cdea4f0bc02642421167c396b03da05c",
+        "gradient_trace.csv": "e68e84765f3c4a49833f28b3036e5f8d741551a82b7db8d3c1181349cf910b8a",
+        "front.csv": "754bac98a2b7c1606943a9b77847fbb7a926faf15dd84a935386f281ef43990d",
+        "events.csv": "1e413794778ddeaaf9c18a096d1c520d2126161ac35a6728ebe9d1409d05836b"
+      }
+    },
+    "replication/depth32_seed1": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.234285,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 1110,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 31
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 1110,
+            "tau_max": 62
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 8
+          },
+          {
+            "heterogeneous_rate_strength": 1.5,
+            "mode": "heterogeneous_rates",
+            "scheduler_seed": 1110
+          }
+        ],
+        "output_dir": "results/prebeam/replication/depth32_seed1",
+        "plots": false,
+        "seed": 1
+      },
+      "raw_sha256": {
+        "analysis.json": "60c4974e612d44b4200afe5799b0b6c7465cf7145a7edc758a8cfbe1b97da643",
+        "summary.json": "8708a07431a55e18534b00dd74d19d25985e4c1ddc7e54703aca5a8b0cb4cf54",
+        "trace.csv": "1a8de7ec9bcb33be9a7d0deef5b09478ebe6a25f309257e5d20d58a55546dbed",
+        "layer_trace.csv": "718394ad533a23e27839757cccc032671a6f57f137debe8b634a71cb8f5ac37a",
+        "gradient_trace.csv": "076d0c3177ca3e515c3c85cda5fa3dd59defb849dfdd2ed2078b2650f1fc7ef5",
+        "front.csv": "aa29f848b4b539bc8660c8c68bfc0a26ddaecab59efa8f4730bff2b70bbb7ddc",
+        "events.csv": "3e140d55ae0c985212c1721b92267ee8604b81d6a9e291c085f56689c77aaa01"
+      }
+    },
+    "replication/depth32_seed2": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.234285,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 2119,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 31
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 2119,
+            "tau_max": 62
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 8
+          },
+          {
+            "heterogeneous_rate_strength": 1.5,
+            "mode": "heterogeneous_rates",
+            "scheduler_seed": 2119
+          }
+        ],
+        "output_dir": "results/prebeam/replication/depth32_seed2",
+        "plots": false,
+        "seed": 2
+      },
+      "raw_sha256": {
+        "analysis.json": "34ff306fefacf5ebbb76cd1c564a63848e3bd6169f22b6c999808c55de08005f",
+        "summary.json": "74f70f6b46e820ecbb1d459430f68059d823a1d2158b8f8a2a3ef0ee363b8fef",
+        "trace.csv": "daae3d52d0d0c7ff76edcb2804765bae41a8c51c3489526483cbe184fbda2c8d",
+        "layer_trace.csv": "981e0a7b3bbb61b78116c91c3be4c6f8ff3ea17ed1999942ab63ceb33e896f69",
+        "gradient_trace.csv": "ddc5411470fecc226b8ab084c6d0142931fd9522ef2f41430462e8acc23c4c24",
+        "front.csv": "6718db98b5c231e0d6929692fa9704c1935dd50b9c7a28c3d057c08e277192bf",
+        "events.csv": "d4c7f075e55c026edf475760d52a5f732948869a35e2a30200bef4bed7ebf73e"
+      }
+    },
+    "replication/depth32_seed3": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.234285,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 3128
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 3128
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 3128,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 3128,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 3128,
+            "tau_max": 31
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 3128,
+            "tau_max": 62
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 3128,
+            "tau_max": 8
+          },
+          {
+            "heterogeneous_rate_strength": 1.5,
+            "mode": "heterogeneous_rates",
+            "scheduler_seed": 3128
+          }
+        ],
+        "output_dir": "results/prebeam/replication/depth32_seed3",
+        "plots": false,
+        "seed": 3
+      },
+      "raw_sha256": {
+        "analysis.json": "f1078c678f6dda097b8c487bd1e0a46e43c1352f7e9f885d18a35c74d20a8276",
+        "summary.json": "9f4bac4c75d38c2b32f5eb389617db2bffca0f2d0857234ee2e1340dfb483917",
+        "trace.csv": "1e43390ebe9041c106389774c6a92029fe5d6cfbc702367a9ba0914a3649f7e2",
+        "layer_trace.csv": "ea1b1bb2bd558f0b80346a575a060593d9ea6b255ad002e152db79253efd1950",
+        "gradient_trace.csv": "60f582832a9da2134eedf48c6694769b90aea4dc4115a9bc5a8a927379b7362d",
+        "front.csv": "c09516656785d1639b3db59a7722aa86cfc3c246361c97620bf1eb9bb21ca64f",
+        "events.csv": "c4a617f88c1140b18efe9a23fd6af82ea5d75249722f673f18bcc8e6d6a9ba83"
+      }
+    },
+    "replication/depth32_seed4": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.234285,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 4137
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 4137
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 4137,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 4137,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 4137,
+            "tau_max": 31
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 4137,
+            "tau_max": 62
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 4137,
+            "tau_max": 8
+          },
+          {
+            "heterogeneous_rate_strength": 1.5,
+            "mode": "heterogeneous_rates",
+            "scheduler_seed": 4137
+          }
+        ],
+        "output_dir": "results/prebeam/replication/depth32_seed4",
+        "plots": false,
+        "seed": 4
+      },
+      "raw_sha256": {
+        "analysis.json": "f96f826946df5a53e1e9ce3b587ea4da1a879726f3a746e19020c0c1a442c4d9",
+        "summary.json": "51939adc318b4ea5c8898b992d62de2ffa4e0f1fbc421160aa5fe66e780deb27",
+        "trace.csv": "538f904ae95eaf2e07085bbaaf8bc7705bea64dc6189386ee155daee5d5b62eb",
+        "layer_trace.csv": "482662b2a60b4eb3b1d653624ea9a72f1f95912b02ddf9229dc67da4a8a73579",
+        "gradient_trace.csv": "3acb416f5ec2e8ee7b5c55168d840822ff5fa04d1b809f02f6056e865097e3e7",
+        "front.csv": "8acccb650ddc25e9902b9d46166a46f37f9f33881f2890c3a6f626acc5db0dc9",
+        "events.csv": "4445d81b6b95360d5f7b5e2f02917b2e3ef74c2669ddd4e64ac06e4abc74997e"
+      }
+    },
+    "depth/depth16_seed0": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 15,
+          "layer_update_budget": 480,
+          "number_of_free_layers": 15,
+          "reference_budget": 64,
+          "reference_sweep_equivalents": 64,
+          "sync_control_budget": 32,
+          "sync_control_sweep_equivalents": 32,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 1,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 64,
+          "rho": 1.0,
+          "state_lr": 0.221921,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 32
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 16,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 101,
+            "tau_max": 15
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 15
+          }
+        ],
+        "output_dir": "results/prebeam/depth/depth16_seed0",
+        "plots": false,
+        "seed": 0
+      },
+      "raw_sha256": {
+        "analysis.json": "615a36f0dc818a06e471787931455aa5e5da3a352251a6c583340f037a2361d9",
+        "summary.json": "2915124fb77026f5b173eb823a1f3c02d82ab274aaa387184b91c4aed79aedc9",
+        "trace.csv": "75c6fc54bfb5515685934277131d5529a771a5389081268a86c911b6a43f7df0",
+        "layer_trace.csv": "dc12a07afd0b773e204f79cff32527e614f1fa2d5913e5a61c9469a96274d833",
+        "gradient_trace.csv": "fdd669587accb4555647aa29dd245eb6a88cd58566fa414c9ab8579477610550",
+        "front.csv": "667f923fd77e207d9e336c6a11fff5f4d23a3dfbec0c890a9a256a8570664fe8",
+        "events.csv": "04b30b949c76af9e5ca89b8360ac68d853f3c98b23856f4e5dc57abc4be3af80"
+      }
+    },
+    "depth/depth16_seed1": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 15,
+          "layer_update_budget": 480,
+          "number_of_free_layers": 15,
+          "reference_budget": 64,
+          "reference_sweep_equivalents": 64,
+          "sync_control_budget": 32,
+          "sync_control_sweep_equivalents": 32,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 1,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 64,
+          "rho": 1.0,
+          "state_lr": 0.221921,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 32
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 16,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 1110,
+            "tau_max": 15
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 15
+          }
+        ],
+        "output_dir": "results/prebeam/depth/depth16_seed1",
+        "plots": false,
+        "seed": 1
+      },
+      "raw_sha256": {
+        "analysis.json": "f44933484484fa9bff2ee9f7e55d9618d2af70b8f0f7d4040569db83587fc204",
+        "summary.json": "7e6f349848d7119ffbf2df950bc7b162032233a786098a598df88ed0775e40c1",
+        "trace.csv": "b515570e50983f8fae42047b29fe8ae1eddbc8648d60999e14f1698eeeece1ad",
+        "layer_trace.csv": "f22e652b8f8357ce11d7f5eb08ab8599bbb54bd0d156dbb71a022bec7c30e0d9",
+        "gradient_trace.csv": "c8dd70e55acbe4a099a41fdfc13cd372a523e470450b2ca8c9be4725ca66e699",
+        "front.csv": "1b93901e137a8364729a207f42e4d339b2127a3d719713453d05ddab9d9e80ca",
+        "events.csv": "ff7ddc312f602b2d63cabb31809fa26f234f2f4dbddcb9fd89043bf00e47e374"
+      }
+    },
+    "depth/depth16_seed2": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 15,
+          "layer_update_budget": 480,
+          "number_of_free_layers": 15,
+          "reference_budget": 64,
+          "reference_sweep_equivalents": 64,
+          "sync_control_budget": 32,
+          "sync_control_sweep_equivalents": 32,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 1,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 64,
+          "rho": 1.0,
+          "state_lr": 0.221921,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 32
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 16,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 2119,
+            "tau_max": 15
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 15
+          }
+        ],
+        "output_dir": "results/prebeam/depth/depth16_seed2",
+        "plots": false,
+        "seed": 2
+      },
+      "raw_sha256": {
+        "analysis.json": "7c5fee2e238fbc97acdf57ed4dd033c2f776b710e93da023914b4b15a30c6994",
+        "summary.json": "9075f6e2fdfb98af9d1203070b97c2abef1c703140f52545c6f7a8b80965352f",
+        "trace.csv": "c56405b1d0a48e507b423bb79d291a547a3f6537eff666610c39fee634d9f20e",
+        "layer_trace.csv": "902a0ec4b3ba0e5dc99b461ac50b7d018c6192edefa147e107fc1800c3d4dc79",
+        "gradient_trace.csv": "225dda7dc06e10fabd8fd1113280a48d79b49a3ba7b2824b4d0362508acf99ee",
+        "front.csv": "ee9cd2ddd57da967d4ea7ef6e45326fec22d3d7e17cd2d874aa678ed70994ffa",
+        "events.csv": "01c2922f7d6f3ed197ef9aa116e1ed875f26009bb9a61eac61cddd610795e192"
+      }
+    },
+    "depth/depth64_seed0": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 252,
+          "layer_update_budget": 8064,
+          "number_of_free_layers": 63,
+          "reference_budget": 256,
+          "reference_sweep_equivalents": 256,
+          "sync_control_budget": 128,
+          "sync_control_sweep_equivalents": 128,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 4,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 256,
+          "rho": 1.0,
+          "state_lr": 0.242954,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 128
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 64,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 101,
+            "tau_max": 63
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 63
+          }
+        ],
+        "output_dir": "results/prebeam/depth/depth64_seed0",
+        "plots": false,
+        "seed": 0
+      },
+      "raw_sha256": {
+        "analysis.json": "eaf86290f216268653384f4026ab0db4ab952cc164342f11a2867b77fc387075",
+        "summary.json": "e6e6c5883168851bd9e2a95e4d1e3eb592e38fc0e888ef138462927ea75a039d",
+        "trace.csv": "6c9f1ddb64f22c870f9ebb7db305f854043f7c0a51709c383276373a1c5c1965",
+        "layer_trace.csv": "b01330e79bd96a25bbe92e7c873189445047bd0892884e3f016fa72aeae625a4",
+        "gradient_trace.csv": "b38dd62efd2cbd22e5922a0f32a5889920419285dab581911e30263fdf480b51",
+        "front.csv": "4f87ae4c21e34df7e22f6b4620e78ece9ff0f3173132010069a8fee6ddad84e8",
+        "events.csv": "9009866684435e0a2e95398a0e4185a020ae0a094b0115a7386a0e7e85de46a4"
+      }
+    },
+    "depth/depth64_seed1": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 252,
+          "layer_update_budget": 8064,
+          "number_of_free_layers": 63,
+          "reference_budget": 256,
+          "reference_sweep_equivalents": 256,
+          "sync_control_budget": 128,
+          "sync_control_sweep_equivalents": 128,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 4,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 256,
+          "rho": 1.0,
+          "state_lr": 0.242954,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 128
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 64,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 1110,
+            "tau_max": 63
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 63
+          }
+        ],
+        "output_dir": "results/prebeam/depth/depth64_seed1",
+        "plots": false,
+        "seed": 1
+      },
+      "raw_sha256": {
+        "analysis.json": "dd207502b217df236783bfeea7f2ca62a67efcb5d80680f948f2f31a1556da3d",
+        "summary.json": "70810f4ab0cc65bc12d3f13553152079d96089ffdb48e391281ffbd1c3286522",
+        "trace.csv": "0ce2e196f802ba62024df5e4606334a8e435b7cb824e812e8abf9ee9fae43a7a",
+        "layer_trace.csv": "79bb9487be914202f2c1931e4842f0d17f264d78ae6c7413c49e454648c3d417",
+        "gradient_trace.csv": "b4e24d38a5d5f5fb9cd2b0cffb14bc7888306560fab60ef6607d599ccd49be1e",
+        "front.csv": "723a29dfce239377434e242942353311c3dac150dd7dcfeda8c93c77262c3b46",
+        "events.csv": "35d568884c152679e643edf41b170b6c4236e81c784cdf16ed8f91896b962b5e"
+      }
+    },
+    "depth/depth64_seed2": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 252,
+          "layer_update_budget": 8064,
+          "number_of_free_layers": 63,
+          "reference_budget": 256,
+          "reference_sweep_equivalents": 256,
+          "sync_control_budget": 128,
+          "sync_control_sweep_equivalents": 128,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "synthetic",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 4,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 256,
+          "rho": 1.0,
+          "state_lr": 0.242954,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 128
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 64,
+          "input_dim": 128,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 2119,
+            "tau_max": 63
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 63
+          }
+        ],
+        "output_dir": "results/prebeam/depth/depth64_seed2",
+        "plots": false,
+        "seed": 2
+      },
+      "raw_sha256": {
+        "analysis.json": "89e1a192af3c7fe85486246ec7b7df6648eced3b49d50b6b4365fcd8f8b8339d",
+        "summary.json": "d8ee4d6a0ed13e62ce37f673d158269565f0272b823d408aa3ac4260703988cf",
+        "trace.csv": "f46025fa7da197464c5d87d019b944ae9747911dd49f963f73286182ead0be7b",
+        "layer_trace.csv": "d5533a32b3cfa3d1d203f82bdf15e3910ea9cb48c01432f39e32ed01328ea5f1",
+        "gradient_trace.csv": "7faed2423d4aad39d235dc1325afbc46ebfacd87a0ff4ca619862a5f59968427",
+        "front.csv": "44627bb5d87943e78ca7a345ef14bd0d2e181db38ebaa4926bfab0cec185eceb",
+        "events.csv": "960da1949531fa7f3b3e4d78e764ff98b1775366ccc79630b220845ffb3257d6"
+      }
+    },
+    "real/depth32_seed0": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "fashion_mnist",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.23588549900873967,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 784,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 101
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 101,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 101,
+            "tau_max": 31
+          }
+        ],
+        "output_dir": "results/prebeam/real/depth32_seed0",
+        "plots": false,
+        "seed": 0
+      },
+      "raw_sha256": {
+        "analysis.json": "80bf268ec31c8205e46d399b79a4c380176ed89203d49f6edfd0e6df09b36767",
+        "summary.json": "a2e9ef8c2141a60e7d65a6e499fc97cd9b96d9569ec26e43733efd81a3d63d8a",
+        "trace.csv": "ac156784b82b1314f31da26800d9a1311d9fcc724c4e29ac73272bd7d871072b",
+        "layer_trace.csv": "3dd815eae113ccdc7990088e38aec34f91086c38a426fc61c8bdc63359bb2a5f",
+        "gradient_trace.csv": "5dec2ab6a166ff33b8a18c81f1f886ebce27a1e63c0517ee2da0f2db76215e5e",
+        "front.csv": "6c65ac90c766077157236996f10b6d40527d4720b0437d06db6eecd599cb4289",
+        "events.csv": "990a26c7392248b261b2bcbf48ec47d4c1c47b96f7ae32a98e4444b82df5cc92"
+      }
+    },
+    "real/depth32_seed1": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "fashion_mnist",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.23588549900873967,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 784,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 1110
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 1110,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 1110,
+            "tau_max": 31
+          }
+        ],
+        "output_dir": "results/prebeam/real/depth32_seed1",
+        "plots": false,
+        "seed": 1
+      },
+      "raw_sha256": {
+        "analysis.json": "5d4d92236f296cca9a08bcb8b70121d1d73751845070bf42dd35554249258899",
+        "summary.json": "6d475f9db6a39d6e5f186d5f45b2999aeab830026924efd54cb14d5f694a6d5e",
+        "trace.csv": "a10cce55e363f3bf224acea8da89430267b0e384f3c2b96f26a3b43c3c4a72e1",
+        "layer_trace.csv": "f747f0b682fc1c42ac915a4cee034269fab6803f56f981a48783bc12feeb7c86",
+        "gradient_trace.csv": "edd3aa2071bd1caa101b4f21d94ce04800690595378efd36dcb9229c2c2f8c40",
+        "front.csv": "b7863b120a1218a8975071109972519da531a99851f6c23ffb9b982e0f31c9e6",
+        "events.csv": "734681596f2b4157c97d22d8bcca5a004045c14a139f931c1a48023d9156f082"
+      }
+    },
+    "real/depth32_seed2": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "fashion_mnist",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.23588549900873967,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 784,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 2119
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 2119,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 2119,
+            "tau_max": 31
+          }
+        ],
+        "output_dir": "results/prebeam/real/depth32_seed2",
+        "plots": false,
+        "seed": 2
+      },
+      "raw_sha256": {
+        "analysis.json": "36efb0b29d548e312db4671fec8707c02ff54b47b9443411482672e78ed7c054",
+        "summary.json": "a12aaa32ad2366e707f75e46beaee01c826126659d5e2e23d3687e3036185bd6",
+        "trace.csv": "1bfd894810bf2d272e57f7ae1b272634abc42fdff54fdc83ceb9205f05a5b8e2",
+        "layer_trace.csv": "7a2c9cb26359874cc242748db754052120936220c0ed6549d08562322278dd40",
+        "gradient_trace.csv": "df2421a70194059a3a8e97c4e6a7b3f5939bde4ce264c5fc7e0cc9b7b0866755",
+        "front.csv": "4670fdb5fba88a55d4cdfd4018923171172127f86b397e07d33fccbf1774a5cb",
+        "events.csv": "9f31a0c91fe8b64cd1d09284a3b34e2712fda79aa0340558a9cb1f172a00f495"
+      }
+    },
+    "real/depth32_seed3": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "fashion_mnist",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.23588549900873967,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 784,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 3128
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 3128
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 3128,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 3128,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 3128,
+            "tau_max": 31
+          }
+        ],
+        "output_dir": "results/prebeam/real/depth32_seed3",
+        "plots": false,
+        "seed": 3
+      },
+      "raw_sha256": {
+        "analysis.json": "e51092acf2bc1daea117dd08ba9bbc8c3adb147ac6fd66385177bc0031337029",
+        "summary.json": "83b501bed0516936b60f899cacee9d9ef3d1fc75cf12ae5bca1baf5676a276c9",
+        "trace.csv": "2887cf728ccb35810d81dfdc0a225fa0d39680da676c042dc498e50ec69032fc",
+        "layer_trace.csv": "4f84b88dbb7afdb4dd977e6d8dd938c7fcce7e981424a89c6159bf4213f128f7",
+        "gradient_trace.csv": "6ce26afc398db68a82fc1fcc4d440f223b31712e95357b709a01ccecd02c55ce",
+        "front.csv": "8f385dbfdd8714f14c6e895871d3167db17261d3eaa550c411afcea317fd1554",
+        "events.csv": "89d3778140a9e32d90ef414fb867a21dcad95feb693c9e6b1ac969880ff76844"
+      }
+    },
+    "real/depth32_seed4": {
+      "config": {
+        "_resolved": {
+          "checkpoint_every_layer_update_events": 62,
+          "layer_update_budget": 1984,
+          "number_of_free_layers": 31,
+          "reference_budget": 128,
+          "reference_sweep_equivalents": 128,
+          "sync_control_budget": 64,
+          "sync_control_sweep_equivalents": 64,
+          "work_accounting": "sweep_equivalents = layer_update_events / number_of_free_layers"
+        },
+        "batch_size": 32,
+        "data": {
+          "test_subset": 64,
+          "train_subset": 256
+        },
+        "dataset": "fashion_mnist",
+        "inference": {
+          "alpha": 1.0,
+          "diagnostic_interval_sweeps": 2,
+          "divergence_threshold": "1.0e7",
+          "front_eps": 1e-12,
+          "front_thresholds": [
+            0.1,
+            0.25,
+            0.5,
+            0.75
+          ],
+          "inner_steps": 1,
+          "reference_budget": 128,
+          "rho": 1.0,
+          "state_lr": 0.23588549900873967,
+          "weight_credit_timing": "pre_dual_energy",
+          "work_sweep_equivalents": 64
+        },
+        "model": {
+          "activation": "relu",
+          "depth": 32,
+          "input_dim": 784,
+          "output_dim": 10,
+          "width": 32
+        },
+        "modes": [
+          {
+            "mode": "sync"
+          },
+          {
+            "mode": "random_coordinate",
+            "scheduler_seed": 4137
+          },
+          {
+            "mode": "random_permutation",
+            "scheduler_seed": 4137
+          },
+          {
+            "mode": "bounded_staleness",
+            "scheduler_seed": 4137,
+            "tau_max": 31
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 4137,
+            "tau_max": 0
+          },
+          {
+            "mode": "fully_async_local",
+            "scheduler_seed": 4137,
+            "tau_max": 31
+          }
+        ],
+        "output_dir": "results/prebeam/real/depth32_seed4",
+        "plots": false,
+        "seed": 4
+      },
+      "raw_sha256": {
+        "analysis.json": "1f57ad9c7502be88b5922a5b64ca2475fb2e02e30eedb5abd88eaabdd7477c38",
+        "summary.json": "09f2356be6316fb5abe9a69358a213f06072729555f40a77644218b60953b70d",
+        "trace.csv": "27929c0341eefab82cfff400f69e5636c4d21e9806a5f5a3ceeb6c96e6a99031",
+        "layer_trace.csv": "06447342c18ff68cb925395ba0773c2170b54e2b0f1a43435327053f837bcded",
+        "gradient_trace.csv": "c0f3e1b1c2b17940a35c6140a819cea0510fe906e747dccc1dfb77026a9b35a2",
+        "front.csv": "7c15fb81aefe4c0d510eefb1bef3328c1203d9bce9e58255f67153c6300286bd",
+        "events.csv": "876ce1c462715c87dc8e9958f8c3cd66269898e36d71a163668819afd5007c87"
+      }
+    }
+  }
+}

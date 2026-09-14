@@ -1,0 +1,58 @@
+{
+  "depth": {
+    "cells": 6,
+    "mode_runs": 36,
+    "seconds": 1042.6418877620004,
+    "reference_min": 0.8512579202651978,
+    "reference_max": 2.0104730129241943
+  },
+  "real": {
+    "cells": 5,
+    "mode_runs": 30,
+    "seconds": 458.45747688100073,
+    "reference_min": 0.6981730461120605,
+    "reference_max": 2.0740551948547363
+  },
+  "reference256": {
+    "cells": 1,
+    "mode_runs": 1,
+    "seconds": 50.74562204599988,
+    "reference_min": 0.8542764186859131,
+    "reference_max": 1.8489782810211182
+  },
+  "replication": {
+    "cells": 5,
+    "mode_runs": 45,
+    "seconds": 702.2213239369999,
+    "reference_min": 0.7556963562965393,
+    "reference_max": 1.9294204711914062
+  },
+  "scout": {
+    "cells": 1,
+    "mode_runs": 14,
+    "seconds": 237.36029066699984,
+    "reference_min": 0.9570185542106628,
+    "reference_max": 1.9294204711914062
+  },
+  "smoke": {
+    "cells": 1,
+    "mode_runs": 6,
+    "seconds": 7.870221364999907,
+    "reference_min": 0.27446961402893066,
+    "reference_max": 0.7838228940963745
+  },
+  "smoke_repeat": {
+    "cells": 1,
+    "mode_runs": 6,
+    "seconds": 7.850396493000062,
+    "reference_min": 0.27446961402893066,
+    "reference_max": 0.7838228940963745
+  },
+  "supplied_scout": {
+    "cells": 1,
+    "mode_runs": 10,
+    "seconds": 175.09843386500006,
+    "reference_min": 0.9570185542106628,
+    "reference_max": 1.9294204711914062
+  }
+}
