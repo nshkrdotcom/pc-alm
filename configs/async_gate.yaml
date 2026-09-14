@@ -1,0 +1,16 @@
+dataset: synthetic
+output_dir: results/async_dynamics/gate32
+seed: 0
+batch_size: 32
+model: {width: 32, depth: 32, activation: relu, input_dim: 128, output_dim: 10}
+data: {train_subset: 256, test_subset: 64}
+inference:
+  work_sweep_equivalents: 64
+  reference_budget: 128
+  state_lr: 0.234285
+  diagnostic_interval_sweeps: 2
+  front_thresholds: [0.10, 0.25, 0.50, 0.75]
+modes:
+  - {mode: sync}
+  - {mode: random_coordinate, scheduler_seed: 101}
+plots: true

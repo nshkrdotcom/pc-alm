@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from typing import Iterable
 
 import jax
@@ -42,19 +43,26 @@ def state_relative_l2_distance(free, reference_free, eps: float = 1e-30) -> floa
     return state_l2_distance(free, reference_free) / max(total_l2_norm(reference_free), eps)
 
 
-def current_state_metrics(params, scales, skips, x, free, duals, phi) -> dict[str, object]:
+@partial(jax.jit, static_argnames=('skips', 'phi'))
+def _state_measurements(params, scales, skips, x, free, duals, phi):
     residuals = constraint_residuals(params, scales, skips, x, free, phi)
-    residual_norms = layer_l2_norms(residuals)
-    dual_norms = layer_l2_norms(duals)
-    activity_norms = layer_l2_norms(free)
+    norms = tuple(jnp.stack([jnp.linalg.norm(v) for v in values]) for values in (residuals, duals, free))
+    totals = jnp.stack([jnp.linalg.norm(v) for v in norms])
+    return residuals, norms, totals
+
+
+def current_state_metrics(params, scales, skips, x, free, duals, phi) -> dict[str, object]:
+    residuals, norms, totals = _state_measurements(params, scales, skips, x, free, duals, phi)
+    norms, totals = jax.device_get((norms, totals))
+    residual_norms, dual_norms, activity_norms = [list(map(float, v)) for v in norms]
     return {
         "residuals": residuals,
         "residual_norms": residual_norms,
         "dual_norms": dual_norms,
         "activity_norms": activity_norms,
-        "total_residual_norm": total_l2_norm(residuals),
-        "total_dual_norm": total_l2_norm(duals),
-        "total_activity_norm": total_l2_norm(free),
+        "total_residual_norm": float(totals[0]),
+        "total_dual_norm": float(totals[1]),
+        "total_activity_norm": float(totals[2]),
     }
 
 
@@ -66,6 +74,16 @@ def _array_cos(a: jax.Array, b: jax.Array) -> float:
 
 def bp_weight_gradients(params, scales, skips, x, y, phi):
     return jax.grad(lambda p: bp_loss(p, scales, skips, x, y, phi))(params)
+
+
+@partial(jax.jit, static_argnames=('skips', 'phi'))
+def _alignment_arrays(params, scales, skips, x, y, free, duals, rho, phi, bp_grads):
+    grads = jax.grad(lambda p: al_energy_shifted(p, scales, skips, x, y, free, duals, rho, phi))(params)
+    layerwise = jnp.stack([jnp.sum(a*b) / jnp.maximum(jnp.sqrt(jnp.sum(a*a)*jnp.sum(b*b)), 1e-30)
+                          for a, b in zip(grads, bp_grads)])
+    norms = jnp.stack([jnp.linalg.norm(g) for g in grads])
+    bp_norms = jnp.stack([jnp.linalg.norm(g) for g in bp_grads])
+    return tree_cos(grads, bp_grads), layerwise, norms, bp_norms
 
 
 def weight_gradient_alignment(
@@ -80,17 +98,16 @@ def weight_gradient_alignment(
     rho: float,
     phi,
     bp_grads=None,
+    return_norms=False,
 ) -> tuple[float, list[float]]:
     free = jax.tree_util.tree_map(jax.lax.stop_gradient, free)
     duals = jax.tree_util.tree_map(jax.lax.stop_gradient, duals)
     if bp_grads is None:
         bp_grads = bp_weight_gradients(params, scales, skips, x, y, phi)
-    method_grads = jax.grad(
-        lambda p: al_energy_shifted(p, scales, skips, x, y, free, duals, rho, phi)
-    )(params)
-    total = float(tree_cos(method_grads, bp_grads))
-    layerwise = [_array_cos(a, b) for a, b in zip(method_grads, bp_grads)]
-    return total, layerwise
+    total, layerwise, norms, bp_norms = jax.device_get(_alignment_arrays(params, scales, skips, x, y, free, duals, rho, phi, bp_grads))
+    if return_norms:
+        return float(total), list(map(float, layerwise)), list(map(float, norms)), list(map(float, bp_norms))
+    return float(total), [float(v) for v in layerwise]
 
 
 def credit_fractions(dual_norms: Iterable[float], reference_dual_norms: Iterable[float], eps: float) -> list[float]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
+from functools import wraps
 from typing import Literal
 
 import jax
@@ -17,12 +18,29 @@ from .inference import (
 )
 from .model import Params, block_pred
 
+
+_compiled_oracle = jax.jit(run_pcalm, static_argnames=(
+    'skips', 'budget', 'inner_steps', 'weight_credit_timing', 'phi'))
+
+
+def _full_precision(function):
+    @wraps(function)
+    def call(*args, **kwargs):
+        # Reduced-precision GPU matmuls made eager and fused events disagree at
+        # depth 32. Scope full float32 matmul precision to the experiment.
+        with jax.default_matmul_precision('highest'):
+            return function(*args, **kwargs)
+    return call
+
 AsyncMode = Literal[
     "random_coordinate",
     "random_block",
     "heterogeneous_rates",
     "bounded_staleness",
     "fully_async_local",
+    "random_permutation",
+    "forward_ordered_sweep",
+    "reverse_ordered_sweep",
 ]
 
 ASYNC_MODES: tuple[str, ...] = (
@@ -31,6 +49,9 @@ ASYNC_MODES: tuple[str, ...] = (
     "heterogeneous_rates",
     "bounded_staleness",
     "fully_async_local",
+    "random_permutation",
+    "forward_ordered_sweep",
+    "reverse_ordered_sweep",
 )
 
 
@@ -61,6 +82,7 @@ class AsyncSchedule:
     tau_max: int = 0
     checkpoint_every_events: int | None = None
     divergence_threshold: float = 1e6
+    jit_events: bool = True
 
 
 @dataclass(frozen=True)
@@ -113,6 +135,7 @@ class SyncReferenceState:
     weight_duals: tuple[jax.Array, ...]
 
 
+@_full_precision
 def run_sync_reference_state(
     params: Params,
     scales,
@@ -144,7 +167,7 @@ def run_sync_reference_state(
         duals = zero_duals_like(residuals)
         return SyncReferenceState(tuple(free), tuple(duals), tuple(duals))
 
-    free, weight_duals = run_pcalm(
+    free, weight_duals = _compiled_oracle(
         params,
         scales,
         skips,
@@ -254,13 +277,14 @@ def _selected_layers(
         count = min(schedule.block_size, max_block_size)
         chosen = rng.choice(n_layers, size=count, replace=False)
         return tuple(int(x) for x in chosen)
-    if schedule.mode in {"heterogeneous_rates", "fully_async_local"}:
+    if schedule.mode in {"heterogeneous_rates", "fully_async_local"} and schedule.heterogeneous_rate_strength > 0:
         layer = int(rng.choice(n_layers, p=rates))
         return (layer,)
     layer = int(rng.integers(0, n_layers))
     return (layer,)
 
 
+@_full_precision
 def run_async_inference(
     params: Params,
     scales,
@@ -271,7 +295,7 @@ def run_async_inference(
     schedule: AsyncSchedule,
     phi,
 ) -> AsyncRunResult:
-    """Run an explicit non-JIT event simulator for async PC-ALM variants.
+    """Run an explicit Python scheduler with optional compiled numerical events.
 
     The model, supervised loss, constraints, shifted augmented-Lagrangian energy,
     activity step scaling, and state variables are shared with `pcalm.inference`.
@@ -291,9 +315,28 @@ def run_async_inference(
 
     grad_free = jax.grad(energy, argnums=0)
 
+    @jax.jit
+    def compiled_event(free_, duals_, read_, selected_mask, global_update):
+        grads = grad_free(read_, duals_)
+        updated = tuple(jnp.where(selected_mask[i], z - effective_lr * g, z)
+                        for i, (z, g) in enumerate(zip(free_, grads)))
+        if schedule.mode == "fully_async_local":
+            residual_state = tuple(jnp.where(selected_mask[i], z, old)
+                                   for i, (z, old) in enumerate(zip(updated, read_)))
+            dual_mask = selected_mask
+        else:
+            residual_state = updated
+            dual_mask = jnp.full((n_layers,), global_update)
+        residuals = constraint_residuals(params, scales, skips, x, residual_state, phi)
+        updated_duals = tuple(jnp.where(dual_mask[i], lam + schedule.alpha * r, lam)
+                              for i, (lam, r) in enumerate(zip(duals_, residuals)))
+        magnitude = jnp.max(jnp.stack([jnp.max(jnp.abs(a)) for a in (*updated, *updated_duals)]))
+        return updated, updated_duals, magnitude
+
     rate_strength = schedule.heterogeneous_rate_strength if schedule.mode in {"heterogeneous_rates", "fully_async_local"} else 0.0
     rates = heterogeneous_layer_rates(n_layers, rate_strength, schedule.scheduler_seed + 104729)
     rng = np.random.default_rng(schedule.scheduler_seed)
+    delay_rng = np.random.default_rng(schedule.scheduler_seed + 130363)
 
     # History is versioned after each scheduler event. JAX arrays are immutable,
     # so retaining tuples is sufficient to preserve the old versions.
@@ -328,6 +371,7 @@ def run_async_inference(
     next_checkpoint = checkpoint_every if checkpoint_every is not None else None
     dual_interval = schedule.inner_steps * n_layers
     event_index = 0
+    sweep_order: list[int] = []
 
     while layer_update_events < schedule.layer_update_budget:
         event_index += 1
@@ -338,7 +382,17 @@ def run_async_inference(
             to_dual_boundary = dual_interval - (layer_update_events % dual_interval)
             max_block = min(remaining_total, to_dual_boundary)
 
-        selected = _selected_layers(schedule, rng, rates, n_layers, max_block)
+        if schedule.mode in {"random_permutation", "forward_ordered_sweep", "reverse_ordered_sweep"}:
+            if not sweep_order:
+                if schedule.mode == "random_permutation":
+                    sweep_order = [int(i) for i in rng.permutation(n_layers)]
+                elif schedule.mode == "forward_ordered_sweep":
+                    sweep_order = list(range(n_layers))
+                else:
+                    sweep_order = list(range(n_layers - 1, -1, -1))
+            selected = (sweep_order.pop(0),)
+        else:
+            selected = _selected_layers(schedule, rng, rates, n_layers, max_block)
         if len(selected) > remaining_total:
             selected = selected[:remaining_total]
 
@@ -346,7 +400,7 @@ def run_async_inference(
         staleness_used = 0
         read_version = state_version
         if schedule.mode in {"bounded_staleness", "fully_async_local"} and schedule.tau_max > 0:
-            requested_staleness = int(rng.integers(0, schedule.tau_max + 1))
+            requested_staleness = int(delay_rng.integers(0, schedule.tau_max + 1))
             staleness_used = min(requested_staleness, state_version, len(history) - 1)
             read_version, stale_free = history[-1 - staleness_used]
             read_free = list(stale_free)
@@ -358,30 +412,45 @@ def run_async_inference(
         for layer_ix in selected:
             read_free[layer_ix] = free[layer_ix]
 
-        grads = grad_free(read_free, duals)
-        new_free = list(free)
-        for layer_ix in selected:
-            new_free[layer_ix] = free[layer_ix] - effective_lr * grads[layer_ix]
-        free = new_free
+        if schedule.jit_events:
+            mask = np.zeros(n_layers, dtype=bool)
+            mask[list(selected)] = True
+            global_update = (layer_update_events + len(selected)) % dual_interval == 0
+            free_out, duals_out, magnitude = compiled_event(tuple(free), tuple(duals), tuple(read_free), mask, global_update)
+            free, duals = list(free_out), list(duals_out)
+        else:
+            grads = grad_free(read_free, duals)
+            new_free = list(free)
+            for layer_ix in selected:
+                new_free[layer_ix] = free[layer_ix] - effective_lr * grads[layer_ix]
+            free = new_free
         layer_update_events += len(selected)
 
         did_global_dual_update = False
         if schedule.mode == "fully_async_local":
             layer_ix = selected[0]
-            local_residual = _local_constraint_residual(
-                params, scales, skips, x, free, read_free, layer_ix, phi
-            )
-            duals[layer_ix] = duals[layer_ix] + schedule.alpha * local_residual
+            if not schedule.jit_events:
+                local_residual = _local_constraint_residual(
+                    params, scales, skips, x, free, read_free, layer_ix, phi
+                )
+                duals[layer_ix] = duals[layer_ix] + schedule.alpha * local_residual
             dual_update_events += 1
         elif layer_update_events % dual_interval == 0:
-            residuals = constraint_residuals(params, scales, skips, x, free, phi)
-            duals = [lam + schedule.alpha * r for lam, r in zip(duals, residuals)]
+            if not schedule.jit_events:
+                residuals = constraint_residuals(params, scales, skips, x, free, phi)
+                duals = [lam + schedule.alpha * r for lam, r in zip(duals, residuals)]
             dual_update_events += n_layers
             global_dual_updates += 1
             did_global_dual_update = True
 
-        assert_finite_state(free, duals)
-        if _max_abs_state(free, duals) > schedule.divergence_threshold:
+        if schedule.jit_events:
+            magnitude = float(magnitude)
+            if not np.isfinite(magnitude):
+                raise FloatingPointError("non-finite compiled event state")
+        else:
+            assert_finite_state(free, duals)
+            magnitude = _max_abs_state(free, duals)
+        if magnitude > schedule.divergence_threshold:
             status = "diverged"
 
         max_staleness_observed = max(max_staleness_observed, staleness_used)

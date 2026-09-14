@@ -63,6 +63,14 @@ def test_tau_zero_is_exactly_nonstale_coordinate_schedule():
         assert jnp.allclose(x, y, atol=1e-7, rtol=1e-7)
 
 
+def test_delay_draws_do_not_change_layer_selection():
+    coord = run('random_coordinate')
+    for mode, extra in [('bounded_staleness', {'tau_max': 4}),
+                        ('fully_async_local', {'tau_max': 2})]:
+        other = run(mode, **extra)
+        assert [e.selected_layers for e in coord.events] == [e.selected_layers for e in other.events]
+
+
 def test_bounded_staleness_never_exceeds_tau_or_available_history():
     result = run("bounded_staleness", tau_max=2, layer_update_budget=20)
     assert result.max_staleness_observed <= 2
@@ -161,6 +169,68 @@ def test_fully_async_local_dual_work_is_local_event_work():
     assert result.global_dual_updates == 0
 
 
+def test_fully_async_event_mutates_only_owned_activity_and_dual():
+    result = run('fully_async_local', layer_update_budget=16, checkpoint_every_events=1, tau_max=3)
+    for event, before, after in zip(result.events, result.checkpoints, result.checkpoints[1:]):
+        for i in range(len(result.final_free)):
+            if i not in event.selected_layers:
+                np.testing.assert_array_equal(before.free[i],after.free[i])
+                np.testing.assert_array_equal(before.duals[i],after.duals[i])
+
+
 def test_nonfinite_state_is_rejected():
     with pytest.raises(FloatingPointError, match="non-finite activity"):
         assert_finite_state([jnp.asarray([jnp.nan])], [jnp.asarray([0.0])])
+
+
+@pytest.mark.parametrize('mode,extra', [
+    ('random_coordinate', {}), ('random_block', {'block_size': 3}),
+    ('heterogeneous_rates', {'heterogeneous_rate_strength': 1.0}),
+    ('bounded_staleness', {'tau_max': 4}),
+    ('fully_async_local', {'tau_max': 3, 'heterogeneous_rate_strength': .7}),
+])
+def test_compiled_events_match_original_eager_trajectory(mode, extra):
+    eager = run(mode, jit_events=False, layer_update_budget=24, checkpoint_every_events=1, **extra)
+    compiled = run(mode, jit_events=True, layer_update_budget=24, checkpoint_every_events=1, **extra)
+    assert eager.events == compiled.events
+    assert eager.status == compiled.status
+    for a, b in zip(eager.checkpoints, compiled.checkpoints):
+        for x, y in zip((*a.free, *a.duals), (*b.free, *b.duals)):
+            np.testing.assert_allclose(x, y, atol=3e-6, rtol=3e-6)
+
+
+@pytest.mark.parametrize('mode', ['random_permutation', 'forward_ordered_sweep', 'reverse_ordered_sweep'])
+def test_ordered_sweeps_determinism_counts_and_locality(mode):
+    a = run(mode, layer_update_budget=12, checkpoint_every_events=1)
+    b = run(mode, layer_update_budget=12, checkpoint_every_events=1, jit_events=False)
+    assert a.events == b.events
+    n = len(a.final_free)
+    for start in range(0, 12, n):
+        order = [e.selected_layers[0] for e in a.events[start:start+n]]
+        assert sorted(order) == list(range(n))
+        if mode == 'forward_ordered_sweep': assert order == list(range(n))
+        if mode == 'reverse_ordered_sweep': assert order == list(range(n-1,-1,-1))
+    assert a.layer_update_events == a.dual_update_events == 12
+    for event, before, after, eager in zip(a.events, a.checkpoints, a.checkpoints[1:], b.checkpoints[1:]):
+        for i in range(n):
+            if i not in event.selected_layers:
+                np.testing.assert_array_equal(before.free[i], after.free[i])
+            np.testing.assert_allclose(after.free[i], eager.free[i], atol=3e-6, rtol=3e-6)
+            np.testing.assert_allclose(after.duals[i], eager.duals[i], atol=3e-6, rtol=3e-6)
+
+
+def test_depth32_gpu_fusion_preserves_event_trajectory():
+    # This case fails at default GPU matmul precision despite small tanh tests
+    # passing: fusion can select reduced-precision kernels for the full gradient.
+    depth, width, input_dim = 32, 32, 128
+    p = init_params(jax.random.PRNGKey(0), depth=depth, width=width, input_dim=input_dim, output_dim=10)
+    x = jnp.ones((32,input_dim)); y=jax.nn.one_hot(jnp.arange(32)%10,10)
+    results=[]
+    for compiled in (False,True):
+        results.append(run_async_inference(p,model_scales(width,depth,input_dim),skip_mask(depth),x,y,
+            schedule=AsyncSchedule(mode='random_coordinate',layer_update_budget=62,state_lr=.234285,
+                rho=1.,alpha=1.,jit_events=compiled,checkpoint_every_events=1),phi=activation_fn('relu')))
+    assert results[0].events == results[1].events
+    for a,b in zip(results[0].checkpoints,results[1].checkpoints):
+        for u,v in zip((*a.free,*a.duals),(*b.free,*b.duals)):
+            np.testing.assert_allclose(u,v,atol=2e-5,rtol=2e-5)

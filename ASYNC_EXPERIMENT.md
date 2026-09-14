@@ -26,6 +26,15 @@ A seeded block of distinct free layers is selected per event. All selected layer
 
 A useful invariant follows: with `block_size == L_free`, one block event updates every free layer from one common state. Repeating those events for `inner_steps` before each global dual update reduces to the official reference semantics. This is tested directly against `run_pcalm`.
 
+### Balanced sequential controls
+
+`random_permutation` updates every free layer exactly once in a seeded shuffled
+sweep. `forward_ordered_sweep` visits input-adjacent to output-adjacent activities;
+`reverse_ordered_sweep` visits output-adjacent to input-adjacent activities. Each
+event sees earlier events in that sweep, and global dual updates still occur
+after `inner_steps * L_free` activity updates. These controls distinguish ordering
+from the repeated/missed layer updates of independent coordinate sampling.
+
 ### `heterogeneous_rates`
 
 One layer updates per event, but selection probabilities are nonuniform. Rates are generated reproducibly from a seeded log-normal distribution and normalized to probabilities. `heterogeneous_rate_strength=0` is exactly uniform; larger values increase scheduler-rate skew. Numerical state learning rates are not randomized.
@@ -68,6 +77,13 @@ With reference `inner_steps > 1`, one PC-ALM outer iteration consumes `inner_ste
 
 Dual work is tracked separately as `dual_update_events`: a global update of all `L_free` duals costs `L_free` dual-update events; one local dual update in `fully_async_local` costs one.
 
+Staleness bounds are scheduler-event counts. For the single-layer stale modes,
+`tau_max / L_free` is the maximum delay in sweep equivalents; uniform delay
+sampling has approximately half that mean once history is available. Delay RNG
+and layer-selection RNG streams are separate, so changing the delay bound leaves
+the selected-layer sequence unchanged. Uniform fully-local and coordinate modes
+also share layer selections for the same scheduler seed.
+
 ## Diagnostics
 
 The dynamics harness holds model parameters fixed and records sparse checkpoints rather than computing an expensive full BP comparison at every local event.
@@ -84,6 +100,28 @@ The dynamics harness holds model parameters fixed and records sparse checkpoints
 
 `layer_trace.csv` contains per-free-layer activity, residual, and dual norms plus credit fraction. `gradient_trace.csv` contains per-weight-layer gradient cosine to BP. `events.csv` makes the realized schedule and stale-read versions auditable.
 
+The common gradient diagnostic uses **actual post-update duals for every mode**.
+The original overlay compared pre-dual sync credit with post-dual async credit;
+that timing confound is corrected. The oracle's configured published credit
+timing is retained in `trace.csv::published_weight_grad_cos_to_bp`. Thus the
+common diagnostic need not equal the gradient used by published pre-dual training.
+
+Events are compiled as a single JAX operation, including the full state gradient,
+masked mutation, dual update, and a finite/magnitude reduction. There is still
+one scalar device-host synchronization per event, and the scheduler/history remain
+Python objects. `AsyncSchedule(jit_events=False)` retains the original eager
+equations for event-by-event regression tests. This is a semantic simulator, not
+an efficient physically local implementation or a BEAM performance proxy.
+
+GPU validation exposed a reduced-matmul-precision confound: the default GPU
+precision produced ~1e-4 differences between eager and fused depth-32 events.
+The experiment now explicitly uses `jax_default_matmul_precision=highest` for
+both synchronous and asynchronous diagnostics, and the inference adapters scope
+that setting to their calls. At highest precision, the 62-event depth-32 regression
+matched exactly on this workstation. No original source or mathematical update
+was changed. Initial default-precision scouts are retained but not used for final
+comparative claims. Resolved summaries record the precision and source hashes.
+
 Nonfinite activity or dual state raises `FloatingPointError`; it is never silently reported as a successful trajectory. A configurable finite-magnitude divergence threshold marks an async run `diverged` and terminates it early.
 
 ## Credit front
@@ -93,6 +131,14 @@ The long synchronous reference run supplies the per-layer credit scale:
 ```text
 credit_fraction_i(t) = ||lambda_i(t)|| / (||lambda_i_ref|| + eps)
 ```
+
+The reference budget defines a finite-time scale, not an assumed converged dual
+solution. On the depth-32 seed-0 GPU check, doubling the reference from 128 to
+256 iterations changes individual norms by 4–40%. The 0.10 and 0.25 threshold
+fronts are much less sensitive than the 0.50 and 0.75 fronts. The continuation
+therefore preserves all four thresholds, saves a reference-budget sensitivity
+table, and uses BP alignment and early-layer gradient magnitudes as independent
+credit diagnostics. No epsilon adjustment or threshold retuning is used.
 
 For front calculations the natural input-to-output layer order is reversed so **distance 0 is the output-adjacent hidden-edge constraint**, and increasing distance moves backward toward the input.
 
@@ -106,6 +152,38 @@ For each threshold, `front.csv` records:
 This intentionally distinguishes a compact propagating front from a smeared async pattern with isolated deeper crossings.
 
 The harness also attempts a log-log fit `R(t) ~ t^beta` using `R_contiguous_layers`, but only when there are at least three positive points and at least a factor-of-two front dynamic range. Otherwise `summary.json` stores `beta: null` and a reason. Raw trajectories remain authoritative.
+
+These fits include finite-depth saturation and possible front retreat; they are
+exploratory summaries, not evidence for a propagation exponent. Study analysis
+uses raw fronts and first-passage times (right-censored when unreached), reports
+threshold sensitivity, and checks early-layer gradient alignment separately.
+
+## GPU validation and staged study
+
+On the validated workstation, prefix commands with
+`XLA_PYTHON_CLIENT_PREALLOCATE=false uv run --no-sync --python 3.12`.
+`scripts/analyze_async_dynamics.py <output-directory> --plots` audits all raw CSVs
+and writes endpoint/first-passage diagnostics plus four-panel and sync-dual plots.
+`scripts/run_async_study.py --stage scout|replication|depth|real|reference` generates
+resolved configurations under ignored results directories and invokes the same
+dynamics harness. Stages are run individually after inspecting the preceding
+stage, not as an unconditional Cartesian sweep. Paired seeds use experiment seed
+`s` for both batch and initialization, and scheduler seed `101 + 1009*s`.
+Synthetic depth changes use `configs/eta_by_depth.csv`; Fashion-MNIST uses the
+width-32/depth-32/ReLU cell calibration. These are fixed-weight dynamics, not training.
+
+The recovered study continues under `results/prebeam/`; its `RECOVERY.md` records
+the interrupted session and preserved earlier runs. The study runner reads both
+calibration tables directly. `scripts/analyze_prebeam.py results/prebeam` audits
+saved raw outputs, writes a complete experiment inventory and reference-sensitivity
+table, and aggregates paired seeds without combining distinct delay/rate settings.
+Configuration lookup in the raw-output audit uses exact generated mode labels;
+substring matching incorrectly identified `h0.5` as `h0` when checking whether
+uniform schedules shared layer selections. This was an analysis-only error, now
+covered by a rate/seed-prefix regression test; saved trajectories did not change.
+Arrival times are first observed crossings at the diagnostic checkpoint spacing;
+an unreached depth is censored, not assigned the final work budget. Mean curves
+use seed min–max bands, and endpoint spreads are sample standard deviations.
 
 ## Running
 

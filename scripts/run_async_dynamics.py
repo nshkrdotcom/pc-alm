@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import hashlib
 import math
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -66,8 +68,8 @@ def mode_label(spec: dict[str, Any]) -> str:
     mode = spec["mode"]
     if mode == "sync":
         return "sync"
-    if mode == "random_coordinate":
-        return f"random_coordinate_seed{spec.get('scheduler_seed', 0)}"
+    if mode in {"random_coordinate", "random_permutation", "forward_ordered_sweep", "reverse_ordered_sweep"}:
+        return f"{mode}_seed{spec.get('scheduler_seed', 0)}"
     if mode == "random_block":
         return f"random_block_b{spec.get('block_size', 1)}_seed{spec.get('scheduler_seed', 0)}"
     if mode == "heterogeneous_rates":
@@ -151,7 +153,7 @@ def diagnostic_rows(
 ):
     metrics = current_state_metrics(params, scales, skips, x, free, actual_duals, phi)
     fractions = credit_fractions(metrics["dual_norms"], reference_dual_norms, front_eps)
-    grad_cos, grad_layer_cos = weight_gradient_alignment(
+    grad_cos, grad_layer_cos, grad_norms, bp_norms = weight_gradient_alignment(
         params,
         scales,
         skips,
@@ -162,6 +164,7 @@ def diagnostic_rows(
         rho=rho,
         phi=phi,
         bp_grads=bp_grads,
+        return_norms=True,
     )
     distance = state_l2_distance(free, reference_free)
     relative_distance = state_relative_l2_distance(free, reference_free)
@@ -220,6 +223,8 @@ def diagnostic_rows(
                 "weight_layer_index_input_to_output": layer_ix,
                 "weight_distance_from_output": depth - 1 - layer_ix,
                 "weight_grad_cos_to_bp": cosine,
+                "weight_grad_norm": grad_norms[layer_ix],
+                "bp_weight_grad_norm": bp_norms[layer_ix],
             }
         )
 
@@ -282,6 +287,11 @@ def maybe_plot(trace_rows: list[dict[str, Any]], front_rows: list[dict[str, Any]
 
 
 def main() -> None:
+    started = time.perf_counter()
+    jax.config.update('jax_default_matmul_precision', 'highest')
+    source_hashes = {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in [*sorted(Path('pcalm').glob('*.py')), Path(__file__)]}
+    print(f"Backend: {jax.default_backend()}; devices: {jax.devices()}", flush=True)
     args = parse_args()
     values = load_values(args.config)
     require_keys(
@@ -470,7 +480,7 @@ def main() -> None:
                     max_staleness_observed=0,
                     free=state.free,
                     actual_duals=state.actual_duals,
-                    gradient_duals=state.weight_duals,
+                    gradient_duals=state.actual_duals,
                     params=params,
                     scales=scales,
                     skips=skips,
@@ -485,6 +495,9 @@ def main() -> None:
                     front_eps=front_eps,
                 )
                 trace_rows.append(row)
+                row['published_weight_grad_cos_to_bp'] = weight_gradient_alignment(
+                    params, scales, skips, x, y, state.free, state.weight_duals,
+                    rho=rho, phi=phi, bp_grads=bp_grads)[0]
                 layer_rows.extend(rows_l)
                 gradient_rows.extend(rows_g)
                 front_rows.extend(rows_f)
@@ -594,8 +607,12 @@ def main() -> None:
             ),
             "max_staleness_observed": 0 if result is None else result.max_staleness_observed,
             "layer_rates": None if result is None else list(result.layer_rates),
+            "layer_update_counts": None if result is None else np.bincount(
+                [i for event in result.events for i in event.selected_layers], minlength=n_free).tolist(),
             "propagation_exponent_by_threshold": beta,
+            "tau_max_sweep_equivalents": int(spec.get("tau_max", 0)) / n_free,
         }
+        print(f"Completed {label}: {status}; cosine={final_row['weight_grad_cos_to_bp']:.5f}; elapsed={time.perf_counter()-started:.1f}s", flush=True)
 
     resolved_config = {
         **values,
@@ -612,6 +629,11 @@ def main() -> None:
         },
     }
     summary = {
+        "runtime_seconds": time.perf_counter() - started,
+        "backend": jax.default_backend(),
+        "matmul_precision": "highest",
+        "source_sha256": source_hashes,
+        "gradient_diagnostic_timing": "post_dual_energy_for_all_modes; published sync timing separately in trace.csv",
         "status": "ok" if all(v["status"] == "ok" for v in mode_summaries.values()) else "has_diverged_modes",
         "dataset": dataset,
         "seed": seed,
@@ -648,6 +670,8 @@ def main() -> None:
     write_csv(gradient_rows, output_dir / "gradient_trace.csv")
     write_csv(front_rows, output_dir / "front.csv")
     write_csv(event_rows, output_dir / "events.csv")
+    if not event_rows:
+        (output_dir / "events.csv").write_text("mode,mode_label,event_index\n")
 
     if bool(values.get("plots", False)) or args.plots:
         maybe_plot(trace_rows, front_rows, output_dir)
