@@ -1,4 +1,6 @@
-# Phase 2 Experiment 2.1: End-to-End Training Comparison Report
+# Phase 2 Experiment 2.1: End-to-End Training Comparison Report [superseded]
+
+> **Notice [superseded]**: This report was produced under Protocol A (4,096 train / 1,024 test samples, 5 epochs, 3 seeds). It is superseded by the Canonical Protocol F0 (`results/f0_canonical/CANONICAL_BENCHMARK_REPORT.md`, full 60k/10k, 10 epochs, 5 seeds). Because sample sizes differed from Protocol B (2,048 samples) and F0 (60,000 samples), absolute accuracies across these protocols cannot be directly compared without citing the specific protocol.
 
 **Question:** Does the async / Gauss-Seidel credit propagation improvement survive weight updates during end-to-end training?
 **Protocol:** Depth 32, Width 32, Fashion-MNIST (4,096 train / 1,024 test samples), Batch Size 64, 5 Epochs, Adam lr=0.001, Matched Inference Budget = 16 sweeps.

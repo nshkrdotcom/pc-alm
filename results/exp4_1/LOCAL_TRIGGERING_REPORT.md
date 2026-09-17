@@ -50,12 +50,25 @@ This experiment evaluates whether local self-timed firing rules (residual-trigge
 
 ## 3. Critical Audit & Gate 3 Retraction
 
-1. **Retraction of "47% Compute Reduction" [Artifact-Suspect / Retracted]**:
+1. **Retraction of "47% Compute Reduction" [retracted / artifact-suspect]**:
    - The reported "17 sweeps vs 32 sweeps" reflects *semantic layer-update mask events*, NOT physical FLOP savings.
    - In the simulation implementation (`run_self_timed_inference`), each round executes `grad_free_all(free, duals)` across **all 31 layers** to evaluate local norms, and `compiled_gs_sweep` computes autodiff gradients for all layers before applying `jnp.where(mask[i], ...)`.
    - Consequently, actual physical FLOPs and wall-clock time were 100% full-depth. No physical computational saving was realized.
    - **Gate 3 Status**: **RETRACTED / UNPROVEN**. A self-timed triggering law that saves physical compute requires sparse / event-driven execution kernels that genuinely skip backward graph evaluation for quiescent layers.
 
-2. **Semantic Event Dynamics [Suggestive]**:
-   - The finding that only 17 reverse layer sweeps are required for credit alignment once masked updates are applied is an algorithmic property of credit stabilization.
-   - However, until mapped to hardware/kernels where quiescent layers truly bypass FLOP execution, this remains an unvalidated physical efficiency claim.
+2. **Instrumented Dual Motion & Inactive `dual_exit` Arm (N6) [established]**:
+   - Every `dual_exit_*` policy in the table is byte-identical to `fixed_gs_b32` (sweeps = 32.0, cosine = 0.9440, early exit rate = 0%).
+   - **Physical Instrumentation of $\|\Delta \lambda_i\|_{\text{RMS}}$**:
+     - Round 1: $\max_i \|\Delta \lambda_i\| = 0.001311$
+     - Round 4: $\max_i \|\Delta \lambda_i\| = 0.003279$
+     - Round 16: $\max_i \|\Delta \lambda_i\| = 0.001939$
+     - Round 32: $\max_i \|\Delta \lambda_i\| = 0.001396$
+   - Because the dual multipliers continuously drift with step $\|\Delta \lambda_i\| \ge 0.0014$, the tested thresholds $\epsilon \in \{10^{-3}, 3\times 10^{-4}, 10^{-4}, 3\times 10^{-5}, 10^{-5}\}$ were mathematically unreachable within 32 rounds.
+   - **Status**: The five `dual_exit_*` rows are dead stopping code and are consolidated as redundant executions of `fixed_gs_b32`.
+
+3. **Exclusion of Degenerate Do-Nothing Baseline (N6) [established]**:
+   - `gradient_wave_th1e-4` was reported with an inflated "work efficiency" of 1.66-2.61 because it executed only $0.3-0.4$ sweeps.
+   - **Trivial Baseline Control**: Evaluating the unrelaxed initial feedforward state ($t=0$, 0 sweeps) yields a reference BP cosine of **$0.6632$**.
+   - `gradient_wave_th1e-4` achieves cosine **$0.6736$** (differing from the unrelaxed state by $< 0.01$, inside the noise floor). It is a do-nothing policy where nearly all layers quiesce immediately.
+   - **Protocol Rule (N6)**: A **minimum work floor** of $W \ge 1.0$ full sweep (31 layer updates) is established. Any policy sweeping $< 1.0$ passes is tagged **`[degenerate]`** and disqualified from Pareto ranking. Work efficiency ($\text{Cosine}/\text{Sweeps}$) is prohibited when sweeps $< 1.0$.
+

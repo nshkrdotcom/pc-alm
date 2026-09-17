@@ -53,13 +53,33 @@ To prevent spurious conclusions (such as confusing norm collapse or schedule art
 | `residual_mean` / `total_residual_norm` | $\frac{1}{L}\sum_{l=1}^{L-1} \|h_l - \sigma(W_l h_{l-1})\|_2$ | Activations collapsing to zero ($h_l \to 0$), trivializing residual satisfaction. | Stale duals failing to penalize constraint violations, masking instability. |
 | `dual_norm` | $\sum_{l=1}^{L-1} \|\lambda_l\|_2$ | Multipliers staying near zero due to low $\alpha$ or dead units, signaling absence of constraint pressure. | Divergence / dual explosion under moving weights or unstable step size. |
 | `final_test_acc` | $\frac{1}{N_{\text{test}}} \sum_{i} \mathbb{I}(\hat{y}_i = y_i)$ | Overfitting to train set, or test set leakage. | More total FLOPs/work executed per wall-clock second rather than superior learning rule. |
-| `sweep_equivalents` | $\frac{\text{total\_layer\_update\_events}}{L - 1}$ | Under-counting coordinate events or ignoring dual update overhead. | Asynchrony appearing "faster" merely by skipping necessary constraint updates. |
+| `total_layer_update_work` | $\sum_t \sum_i \mathbb{I}(\text{layer } i \text{ updated at } t)$ | Counting masked updates while full-graph compute runs. | Under-counting coordinate events or ignoring dual update overhead. |
+| `critical_path_steps` | $\max_{\text{path}} \sum_{e \in \text{path}} \text{cost}(e)$ | Assuming zero-latency cross-layer communication. | Confusing serial Gauss-Seidel sweeps with parallel Jacobi clock cycles. |
+
+> **Prohibited Metric**: `parallel_work = work * depth` has no physical units or standard meaning and is **permanently prohibited**.
 
 ---
 
 ## 3. Protocol Rules for Subsequent Phases
 
-1. **Matched Work Constraint:** All comparisons between synchronous, Gauss-Seidel, and asynchronous variants must be matched by total layer-update events (`sweep_equivalents`), not wall-clock time on unoptimized simulators.
-2. **Norm Sanity Checks:** Any reported increase in `grad_cos_to_bp` must be accompanied by non-collapsed `dual_norm` and `early_grad_norm_ratio`.
-3. **Seed Replication:** No algorithmic claims will be made on fewer than 3 random seeds.
-4. **Moving Weights Precedence:** Phase 1 discriminates mechanism under frozen weights; Phase 2 immediately tests moving weights.
+1. **Two-Axis Work & Latency Accounting:** All schedule comparisons must report both `total_layer_update_work` and `critical_path_steps`.
+2. **Canonical Protocol Precedence:** All official benchmark comparisons must cite and follow `PROTOCOLS.md` (Protocol F0).
+3. **Norm Sanity Checks:** Any reported increase in `grad_cos_to_bp` must be accompanied by non-collapsed `dual_norm` and `early_grad_norm_ratio`.
+4. **Seed Replication & Significance:** $\ge 5$ random seeds with 95% bootstrap confidence intervals. Differences $< 1.5\sigma$ are labeled `[not distinguishable from null]`.
+
+---
+
+## 4. Formal Confidence Tag Ladder (N4)
+
+Every empirical and theoretical claim across reports and worklogs must carry an explicit confidence tag adhering to the following strict criteria:
+
+| Confidence Tag | Operational Definition & Acceptance Threshold | Demotion / Revocation Trigger |
+| :--- | :--- | :--- |
+| **`[established]`** | Independently reproduced across **$\ge 2$ scales or depths** (e.g. Depth 16 and 32, or full dataset), with 95% bootstrap confidence intervals excluding the null hypothesis ($Z \ge 2.0\sigma$), and negative controls excluding trivial confounding mechanisms. | Single-configuration result, unisolated mechanism, or CI overlapping null. |
+| **`[suggestive]`** | Evaluated on a **single scale/depth/dataset**, directionally consistent across random seeds with separation from baseline ($Z \ge 1.5\sigma$), but lacking multi-scale replication or complete mechanism isolation. | $Z < 1.5\sigma$ relative to binomial noise floor or variance. |
+| **`[not distinguishable from null]`** | Observed effect size is **$< 1.5\sigma$** relative to empirical standard error or test set binomial noise floor. | Cannot be claimed as an algorithmic win or difference. |
+| **`[artifact-suspect]`** | Metric definition, measurement apparatus, or simulated counter was found to confound, inflate, or fabricate the observed quantity (e.g. counting masked FLOPs or multiplying work by depth). | Requires immediate retraction of associated claims. |
+| **`[retracted]`** | Demonstrated to be empirically false, mathematically invalid, physically non-realizable, or refuted by controlled replication. | Permanent revocation. |
+| **`[conjecture / proof sketch]`** | Formal mathematical statement derived analytically under stated assumptions, but pending full discrete-time nonlinear proof or empirical boundary mapping. | Contradiction with established bounds or simulations. |
+| **`[superseded]`** | Artifact produced under an earlier, non-canonical, or under-powered exploratory protocol that has been replaced by Canonical Protocol F0. | Informational only; cannot be cited as current benchmark. |
+
