@@ -64,7 +64,7 @@ def analyze(root: Path, plots: bool = False):
                     previous = uniform_selections[seed]
                     assert sequence[:min(len(sequence), len(previous))] == previous[:min(len(sequence), len(previous))]
                 uniform_selections[seed] = sequence
-            if result['mode'] == 'fully_async_local':
+            if result['mode'] in ('fully_async_local', 'sync_gs', 'sync_gs_forward'):
                 assert result['final_dual_update_events'] == counts.sum()
             else:
                 assert result['final_dual_update_events'] == counts.sum() // (n * summary['inference']['inner_steps']) * n

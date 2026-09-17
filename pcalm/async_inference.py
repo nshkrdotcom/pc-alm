@@ -41,6 +41,8 @@ AsyncMode = Literal[
     "random_permutation",
     "forward_ordered_sweep",
     "reverse_ordered_sweep",
+    "sync_gs",
+    "sync_gs_forward",
 ]
 
 ASYNC_MODES: tuple[str, ...] = (
@@ -52,6 +54,8 @@ ASYNC_MODES: tuple[str, ...] = (
     "random_permutation",
     "forward_ordered_sweep",
     "reverse_ordered_sweep",
+    "sync_gs",
+    "sync_gs_forward",
 )
 
 
@@ -320,7 +324,7 @@ def run_async_inference(
         grads = grad_free(read_, duals_)
         updated = tuple(jnp.where(selected_mask[i], z - effective_lr * g, z)
                         for i, (z, g) in enumerate(zip(free_, grads)))
-        if schedule.mode == "fully_async_local":
+        if schedule.mode in {"fully_async_local", "sync_gs", "sync_gs_forward"}:
             residual_state = tuple(jnp.where(selected_mask[i], z, old)
                                    for i, (z, old) in enumerate(zip(updated, read_)))
             dual_mask = selected_mask
@@ -376,17 +380,17 @@ def run_async_inference(
     while layer_update_events < schedule.layer_update_budget:
         event_index += 1
         remaining_total = schedule.layer_update_budget - layer_update_events
-        if schedule.mode == "fully_async_local":
+        if schedule.mode in {"fully_async_local", "sync_gs", "sync_gs_forward"}:
             max_block = 1
         else:
             to_dual_boundary = dual_interval - (layer_update_events % dual_interval)
             max_block = min(remaining_total, to_dual_boundary)
 
-        if schedule.mode in {"random_permutation", "forward_ordered_sweep", "reverse_ordered_sweep"}:
+        if schedule.mode in {"random_permutation", "forward_ordered_sweep", "reverse_ordered_sweep", "sync_gs", "sync_gs_forward"}:
             if not sweep_order:
                 if schedule.mode == "random_permutation":
                     sweep_order = [int(i) for i in rng.permutation(n_layers)]
-                elif schedule.mode == "forward_ordered_sweep":
+                elif schedule.mode in {"forward_ordered_sweep", "sync_gs_forward"}:
                     sweep_order = list(range(n_layers))
                 else:
                     sweep_order = list(range(n_layers - 1, -1, -1))
@@ -427,7 +431,7 @@ def run_async_inference(
         layer_update_events += len(selected)
 
         did_global_dual_update = False
-        if schedule.mode == "fully_async_local":
+        if schedule.mode in {"fully_async_local", "sync_gs", "sync_gs_forward"}:
             layer_ix = selected[0]
             if not schedule.jit_events:
                 local_residual = _local_constraint_residual(

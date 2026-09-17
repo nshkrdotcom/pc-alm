@@ -199,7 +199,7 @@ def test_compiled_events_match_original_eager_trajectory(mode, extra):
             np.testing.assert_allclose(x, y, atol=3e-6, rtol=3e-6)
 
 
-@pytest.mark.parametrize('mode', ['random_permutation', 'forward_ordered_sweep', 'reverse_ordered_sweep'])
+@pytest.mark.parametrize('mode', ['random_permutation', 'forward_ordered_sweep', 'reverse_ordered_sweep', 'sync_gs', 'sync_gs_forward'])
 def test_ordered_sweeps_determinism_counts_and_locality(mode):
     a = run(mode, layer_update_budget=12, checkpoint_every_events=1)
     b = run(mode, layer_update_budget=12, checkpoint_every_events=1, jit_events=False)
@@ -208,13 +208,17 @@ def test_ordered_sweeps_determinism_counts_and_locality(mode):
     for start in range(0, 12, n):
         order = [e.selected_layers[0] for e in a.events[start:start+n]]
         assert sorted(order) == list(range(n))
-        if mode == 'forward_ordered_sweep': assert order == list(range(n))
-        if mode == 'reverse_ordered_sweep': assert order == list(range(n-1,-1,-1))
+        if mode in {'forward_ordered_sweep', 'sync_gs_forward'}: assert order == list(range(n))
+        if mode in {'reverse_ordered_sweep', 'sync_gs'}: assert order == list(range(n-1,-1,-1))
     assert a.layer_update_events == a.dual_update_events == 12
+    if mode in {'sync_gs', 'sync_gs_forward'}:
+        assert a.global_dual_updates == 0
     for event, before, after, eager in zip(a.events, a.checkpoints, a.checkpoints[1:], b.checkpoints[1:]):
         for i in range(n):
             if i not in event.selected_layers:
                 np.testing.assert_array_equal(before.free[i], after.free[i])
+                if mode in {'sync_gs', 'sync_gs_forward'}:
+                    np.testing.assert_array_equal(before.duals[i], after.duals[i])
             np.testing.assert_allclose(after.free[i], eager.free[i], atol=3e-6, rtol=3e-6)
             np.testing.assert_allclose(after.duals[i], eager.duals[i], atol=3e-6, rtol=3e-6)
 

@@ -1,0 +1,45 @@
+dataset: synthetic
+output_dir: results/exp1_1/scout
+seed: 0
+batch_size: 32
+
+model:
+  width: 32
+  depth: 32
+  activation: relu
+  input_dim: 128
+  output_dim: 10
+
+data:
+  train_subset: 256
+  test_subset: 64
+
+inference:
+  work_sweep_equivalents: 64
+  reference_budget: 128
+  state_lr: 0.234285
+  rho: 1.0
+  alpha: 1.0
+  inner_steps: 1
+  weight_credit_timing: pre_dual_energy
+  diagnostic_interval_sweeps: 4
+  front_thresholds: [0.10, 0.25, 0.50, 0.75]
+  front_eps: 1.0e-12
+  divergence_threshold: 1.0e7
+
+modes:
+  - mode: sync
+  - mode: sync_gs
+    scheduler_seed: 101
+  - mode: sync_gs_forward
+    scheduler_seed: 101
+  - mode: reverse_ordered_sweep
+    scheduler_seed: 101
+  - mode: random_coordinate
+    scheduler_seed: 101
+  - mode: fully_async_local
+    scheduler_seed: 101
+    tau_max: 0
+    heterogeneous_rate_strength: 0.0
+
+plots: false

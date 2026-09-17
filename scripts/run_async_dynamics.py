@@ -68,7 +68,7 @@ def mode_label(spec: dict[str, Any]) -> str:
     mode = spec["mode"]
     if mode == "sync":
         return "sync"
-    if mode in {"random_coordinate", "random_permutation", "forward_ordered_sweep", "reverse_ordered_sweep"}:
+    if mode in {"random_coordinate", "random_permutation", "forward_ordered_sweep", "reverse_ordered_sweep", "sync_gs", "sync_gs_forward"}:
         return f"{mode}_seed{spec.get('scheduler_seed', 0)}"
     if mode == "random_block":
         return f"random_block_b{spec.get('block_size', 1)}_seed{spec.get('scheduler_seed', 0)}"
