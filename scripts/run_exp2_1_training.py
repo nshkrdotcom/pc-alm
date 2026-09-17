@@ -98,7 +98,34 @@ def make_infer_fns(scales, skips, phi, state_lr: float, rho: float, alpha: float
         (final_free, final_duals), _ = jax.lax.scan(single_sweep, (free, duals), xs=None, length=budget)
         return final_free, final_duals
 
-    # 3. Async-Local PC-ALM (Coordinate selection with immediate local duals)
+    # 3. Sync-GS Forward PC-ALM (Forward Gauss-Seidel with immediate local duals)
+    def run_sync_gs_forward(params, x, y):
+        free = tuple(free_init(params, scales, skips, x, phi))
+        duals = tuple(zero_duals_like(constraint_residuals(params, scales, skips, x, free, phi)))
+        n = len(free)
+        effective_lr = state_lr * x.shape[0]
+
+        def single_sweep(carry, _):
+            f_curr, d_curr = carry
+            for i in range(n):
+                def energy_i(z_i):
+                    f = tuple(z_i if j == i else f_curr[j] for j in range(n))
+                    return al_energy_shifted(params, scales, skips, x, y, f, d_curr, rho, phi)
+                g_i = jax.grad(energy_i)(f_curr[i])
+                z_new = f_curr[i] - effective_lr * g_i
+                f_curr = tuple(z_new if j == i else f_curr[j] for j in range(n))
+
+                z_prev = x if i == 0 else f_curr[i - 1]
+                pred = block_pred(params[i], scales[i], skips[i], z_prev, phi, is_first=(i == 0))
+                r_i = z_new - pred
+                lam_new = d_curr[i] + alpha * r_i
+                d_curr = tuple(lam_new if j == i else d_curr[j] for j in range(n))
+            return (f_curr, d_curr), None
+
+        (final_free, final_duals), _ = jax.lax.scan(single_sweep, (free, duals), xs=None, length=budget)
+        return final_free, final_duals
+
+    # 4. Async-Local PC-ALM (Coordinate selection with immediate local duals)
     def run_async_local(params, x, y, rng_key):
         free = tuple(free_init(params, scales, skips, x, phi))
         duals = tuple(zero_duals_like(constraint_residuals(params, scales, skips, x, free, phi)))
@@ -120,7 +147,7 @@ def make_infer_fns(scales, skips, phi, state_lr: float, rho: float, alpha: float
         (final_free, final_duals), _ = jax.lax.scan(single_step, (free, duals), selected_layers)
         return final_free, final_duals
 
-    return run_sync_pcalm, run_sync_gs, run_async_local
+    return run_sync_pcalm, run_sync_gs, run_sync_gs_forward, run_async_local
 
 
 def main():
@@ -133,7 +160,7 @@ def main():
     batch_size = 64
     epochs = 5
     seeds = [0, 1, 2]
-    methods = ["bp", "sync_pcalm", "sync_gs_pcalm", "async_local_pcalm"]
+    methods = ["bp", "sync_pcalm", "sync_gs_pcalm", "sync_gs_forward_pcalm", "async_local_pcalm"]
 
     train_samples = 4096
     test_samples = 1024
@@ -153,7 +180,7 @@ def main():
     skips = skip_mask(depth)
     phi = activation_fn("relu")
 
-    run_sync_pcalm, run_sync_gs, run_async_local = make_infer_fns(scales, skips, phi, state_lr, rho, alpha, budget)
+    run_sync_pcalm, run_sync_gs, run_sync_gs_forward, run_async_local = make_infer_fns(scales, skips, phi, state_lr, rho, alpha, budget)
 
     # Build compiled training step functions
     @jax.jit
@@ -178,6 +205,14 @@ def main():
         return adam_apply(params, grads, opt_state, learning_rate)
 
     @jax.jit
+    def step_sync_gs_forward(params, opt_state, x, y):
+        free, duals = run_sync_gs_forward(params, x, y)
+        free = jax.tree_util.tree_map(jax.lax.stop_gradient, free)
+        duals = jax.tree_util.tree_map(jax.lax.stop_gradient, duals)
+        grads = jax.grad(lambda p: al_energy_shifted(p, scales, skips, x, y, free, duals, rho, phi))(params)
+        return adam_apply(params, grads, opt_state, learning_rate)
+
+    @jax.jit
     def step_async_local(params, opt_state, x, y, k):
         free, duals = run_async_local(params, x, y, k)
         free = jax.tree_util.tree_map(jax.lax.stop_gradient, free)
@@ -185,23 +220,46 @@ def main():
         grads = jax.grad(lambda p: al_energy_shifted(p, scales, skips, x, y, free, duals, rho, phi))(params)
         return adam_apply(params, grads, opt_state, learning_rate)
 
+    # Per-method diagnostics (Remediating R4)
+    def make_diag_fn(infer_fn, is_async=False):
+        @jax.jit
+        def diag_fn(params, x, y, k=None):
+            bp_g = jax.grad(lambda p: bp_loss(p, scales, skips, x, y, phi))(params)
+            if is_async:
+                f, d = infer_fn(params, x, y, k)
+            else:
+                f, d = infer_fn(params, x, y)
+            f = jax.tree_util.tree_map(jax.lax.stop_gradient, f)
+            d = jax.tree_util.tree_map(jax.lax.stop_gradient, d)
+            al_g = jax.grad(lambda p: al_energy_shifted(p, scales, skips, x, y, f, d, rho, phi))(params)
+            cos = tree_cos(al_g, bp_g)
+            residuals = constraint_residuals(params, scales, skips, x, f, phi)
+            res_norm = jnp.sqrt(sum(jnp.sum(r * r) for r in residuals))
+            dual_norm = jnp.sqrt(sum(jnp.sum(lam * lam) for lam in d))
+            return cos, res_norm, dual_norm
+        return diag_fn
+
+    diag_sync = make_diag_fn(run_sync_pcalm)
+    diag_gs = make_diag_fn(run_sync_gs)
+    diag_gs_fwd = make_diag_fn(run_sync_gs_forward)
+    diag_async = make_diag_fn(run_async_local, is_async=True)
+
+    def compute_diagnostics_for_method(m_name, params, x, y, k):
+        if m_name == "bp":
+            return 1.0, 0.0, 0.0
+        if m_name == "sync_pcalm":
+            return diag_sync(params, x, y)
+        if m_name == "sync_gs_pcalm":
+            return diag_gs(params, x, y)
+        if m_name == "sync_gs_forward_pcalm":
+            return diag_gs_fwd(params, x, y)
+        if m_name == "async_local_pcalm":
+            return diag_async(params, x, y, k)
+        raise ValueError(f"unknown method {m_name}")
+
     @jax.jit
     def eval_batch(params, x, y):
         return mse_ce_accuracy(logits(params, scales, skips, x, phi), y)
-
-    @jax.jit
-    def compute_diagnostics(params, x, y):
-        bp_g = jax.grad(lambda p: bp_loss(p, scales, skips, x, y, phi))(params)
-        f_gs, d_gs = run_sync_gs(params, x, y)
-        f_gs = jax.tree_util.tree_map(jax.lax.stop_gradient, f_gs)
-        d_gs = jax.tree_util.tree_map(jax.lax.stop_gradient, d_gs)
-        al_g = jax.grad(lambda p: al_energy_shifted(p, scales, skips, x, y, f_gs, d_gs, rho, phi))(params)
-        cos = tree_cos(al_g, bp_g)
-
-        residuals = constraint_residuals(params, scales, skips, x, f_gs, phi)
-        res_norm = jnp.sqrt(sum(jnp.sum(r * r) for r in residuals))
-        dual_norm = jnp.sqrt(sum(jnp.sum(d * d) for d in d_gs))
-        return cos, res_norm, dual_norm
 
     def evaluate_model(params, X, Y):
         total_acc, total_loss, count = 0.0, 0.0, 0
@@ -241,8 +299,10 @@ def main():
             step_count = 0
             rng = np.random.default_rng(seed)
 
-            # Diagnostic at epoch 0
-            cos0, res0, dual0 = compute_diagnostics(params, jnp.asarray(train_x[:batch_size]), jnp.asarray(train_y[:batch_size]))
+            # Diagnostic at epoch 0 (using method's own inference)
+            cos0, res0, dual0 = compute_diagnostics_for_method(
+                method, params, jnp.asarray(train_x[:batch_size]), jnp.asarray(train_y[:batch_size]), jax.random.PRNGKey(seed + 999)
+            )
             tr_loss, tr_acc = evaluate_model(params, train_x, train_y)
             te_loss, te_acc = evaluate_model(params, test_x, test_y)
 
@@ -275,6 +335,8 @@ def main():
                         params, opt_state = step_sync_pcalm(params, opt_state, xb, yb)
                     elif method == "sync_gs_pcalm":
                         params, opt_state = step_sync_gs(params, opt_state, xb, yb)
+                    elif method == "sync_gs_forward_pcalm":
+                        params, opt_state = step_sync_gs_forward(params, opt_state, xb, yb)
                     elif method == "async_local_pcalm":
                         k = jax.random.PRNGKey(seed * 10000 + step_count)
                         params, opt_state = step_async_local(params, opt_state, xb, yb, k)
@@ -283,7 +345,9 @@ def main():
                 elapsed = time.perf_counter() - t_start
                 tr_loss, tr_acc = evaluate_model(params, train_x, train_y)
                 te_loss, te_acc = evaluate_model(params, test_x, test_y)
-                cos, res, dual = compute_diagnostics(params, jnp.asarray(train_x[:batch_size]), jnp.asarray(train_y[:batch_size]))
+                cos, res, dual = compute_diagnostics_for_method(
+                    method, params, jnp.asarray(train_x[:batch_size]), jnp.asarray(train_y[:batch_size]), jax.random.PRNGKey(seed * 10000 + step_count)
+                )
 
                 rows.append({
                     "epoch": epoch,

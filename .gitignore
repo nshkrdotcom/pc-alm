@@ -13,6 +13,9 @@ __pycache__/
 
 # Local datasets and generated outputs
 data/
-results/
+results/**
+!results/**/
+!results/**/*.md
+!results/**/summary_metrics.csv
 logs/
 tmp/

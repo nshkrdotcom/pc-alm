@@ -77,33 +77,44 @@ $$\tilde{X}_{k+1} = \mathcal{M}_{\sigma_k, d_k} \tilde{X}_k$$
 
 ### 3.2 The Dual Local Invariance Theorem
 
-> **Theorem 1 (Dual Local Invariance)**:
-> Let the communication delay between distinct layers be arbitrarily bounded by $\tau_{\max} < \infty$.
-> 1. **(Local Dual Updates)**: If each layer $i$ updates its owned dual multiplier $\lambda_i$ locally with zero self-delay ($\tau_{k, i}^{\text{own}} = 0$):
+### 3.2 Dual Local Stability and Delayed-Dual Sensitivity [Conjecture & Proof Sketch]
+
+> **Conjecture 1 (Dual Local Stability & Delayed-Dual Degradation)**:
+> Let the communication delay between distinct layers be bounded by $\tau_{\max} < \infty$.
+> 1. **(Local Dual Updates, $\tau_{\text{own}} = 0$)**: When each layer updates its owned multiplier locally:
 >    $$\lambda_i(k+1) = \lambda_i(k) + \alpha r_i(k+1)$$
->    then the system remains asymptotically stable for all step sizes satisfying $\eta_h \sigma_{\max}^2 < \frac{2}{\rho}$ and $\alpha < \rho$.
-> 2. **(Delayed Dual Updates)**: If the owned dual multiplier $\lambda_i$ is updated with delay $\tau \ge 1$:
->    $$\lambda_i(k+1) = \lambda_i(k) + \alpha r_i(k - \tau)$$
->    then for any step size near the convergence boundary ($\eta_h \sigma_{\max}^2 \approx 1$), the characteristic roots cross the unit disk via Neimark-Sacker (discrete Hopf) bifurcation, producing unbounded exponential divergence.
+>    the uncoupled 2x2 single-layer subsystem is asymptotically stable if and only if:
+>    $$k\rho < 2 \quad \text{and} \quad k(2\rho + \alpha) < 4$$
+>    where $k = \eta_h \sigma_{\max}^2$. At standard calibration $k=1, \rho=1$, this reproduces the exact boundary $\alpha < 2.0$.
+> 2. **(Delayed Dual Updates, $\tau_{\text{own}} \ge 1$)**: When the owned dual multiplier update is delayed by $\tau$ steps:
+>    $$\lambda_i(k+1) = \lambda_i(k) + \alpha r_i(k - \tau + 1)$$
+>    the characteristic polynomial becomes:
+>    $$P_\tau(z) = z^{\tau-1}(z - 1)(z - 1 + k\rho) + k\alpha = 0$$
+>    - For $\tau = 1$: $P_1(z) = z^2 - (2 - k\rho)z + (1 - k\rho + k\alpha) = 0$. Stability requires $|1 - k\rho + k\alpha| < 1$, which at $k=1, \rho=1$ contracts the stable ceiling from $\alpha < 2.0$ down to $\alpha < 1.0$.
+>    - For $\tau \ge 2$: For $\tau=2$, $P_2(z) = z^3 - (2 - k\rho)z^2 + (1 - k\rho)z + k\alpha = 0$. At $k=1, \rho=1$, this simplifies to $z^3 - z^2 + \alpha = 0$. For $\alpha = 1$, the roots are $z_1 \approx -0.755$ (real) and $z_{2,3} \approx 0.877 \pm 0.745i$, with modulus $|z_{2,3}| = \sqrt{0.877^2 + 0.745^2} \approx 1.151 > 1$. The complex conjugate pair exits the unit disk, inducing oscillatory instability (Neimark-Sacker bifurcation).
+>
+> *Qualification*: Condition D (stale own dual) tested in Experiment 1.2 is an **unphysical fault mode** for any localized physical implementation (since a physical processor maintains its own registers locally with zero interconnect latency). Its utility is strictly diagnostic: it confirms that the local AL multiplier is an active feedback integrator that cannot tolerate internal delay, unlike cross-layer activity buffers which act as passive bounded inputs.
 
-#### Proof Sketch:
-Consider the scalar 1-D subsystem for a single layer $i$ uncoupled from neighbor variations.
-In Case 1 (Local Dual):
-$$h_{k+1} = h_k - \eta [ \rho r_k + \lambda_k ] = (1 - k\rho) h_k - k \lambda_k$$
-$$\lambda_{k+1} = \lambda_k + \alpha h_{k+1}$$
-The characteristic polynomial is $P_1(z) = z^2 - (2 - k\rho - k\alpha)z + (1 - k\rho)$.
-At $k=1, \rho=1$: roots satisfy $|z| = \sqrt{1 - k\rho} = 0 < 1$. All eigenvalues are strictly within the unit circle. Neighbor cross-couplings enter as off-diagonal blocks with spectral radius bounded by $\|W_{i+1}\| \|W_i\| \approx \frac{1}{W} \ll 1$, which by the Gershgorin circle theorem preserves strict spectral containment in the unit disk.
+#### Derivation:
+For a decoupled linear layer:
+$$h_{k+1} = h_k - k[\rho h_k + \lambda_k] = (1 - k\rho)h_k - k\lambda_k$$
+$$\lambda_{k+1} = \lambda_k + \alpha h_{k+1} = \alpha(1 - k\rho)h_k + (1 - k\alpha)\lambda_k$$
 
-In Case 2 (Delayed Dual, $\tau \ge 1$):
-$$\lambda_{k+1} = \lambda_k + \alpha h_{k-\tau}$$
-The characteristic polynomial becomes:
-$$P_\tau(z) = z^{\tau+1}(z - 1 + k\rho) + k\alpha$$
-For $\tau = 1$: $z^2 - (1 - k\rho)z + k\alpha = 0$.
-The constant coefficient is $a_0 = k\alpha$. By the Schur-Cohn / Jury criterion, a necessary condition for stability is $|a_0| < 1$. But for $\tau \ge 2$:
-$$z^{\tau+2} - (1 - k\rho)z^{\tau+1} + k\alpha = 0$$
-Evaluating at $z = e^{i\omega}$, the phase lag introduced by $z^{-\tau}$ shifts the stabilizing negative feedback of the augmented Lagrangian into positive feedback at high frequencies ($\omega \approx \pi$), causing eigenvalues to escape $|z| > 1$.
+The state transition matrix is:
+$$M = \begin{pmatrix} 1 - k\rho & -k \\ \alpha(1 - k\rho) & 1 - k\alpha \end{pmatrix}$$
+with trace $\text{Tr}(M) = 2 - k\rho - k\alpha$ and determinant $\det(M) = 1 - k\rho$.
+The characteristic polynomial is:
+$$P_0(z) = z^2 - (2 - k\rho - k\alpha)z + (1 - k\rho)$$
+By the Jury / Schur-Cohn stability criterion for quadratics:
+1. $P_0(1) = k\alpha > 0 \implies \alpha > 0$
+2. $P_0(-1) = 4 - 2k\rho - k\alpha > 0 \implies k(2\rho + \alpha) < 4$
+3. $|\det(M)| = |1 - k\rho| < 1 \implies 0 < k\rho < 2$
+This reproduces the established PC-ALM stability criterion $\eta_h \sigma_{\max}^2 (2\rho + \alpha) < 4$.
+At the operating point $k=1, \rho=1$, the determinant is $\det(M) = 0$, meaning the product of the eigenvalues is zero (at $\alpha=1$, $\text{Tr}(M) = 0$, yielding deadbeat eigenvalues $z_1 = z_2 = 0$).
 
-This rigorously proves why **Experiment 1.2** observed catastrophic divergence ($\cos \approx -0.09$, residuals $> 46$) exclusively in Condition D (stale own dual), while cleanly tolerating stale forward activity ($\cos \approx 0.978$), stale backward activity ($\cos \approx 0.951$), and stale downstream duals ($\cos \approx 0.929$).
+When delay $\tau$ is introduced between the residual evaluation and dual accumulation, the Z-transform yields:
+$$(z - 1)(z - 1 + k\rho) = -k\alpha z^{1 - \tau} \implies z^{\tau - 1}(z - 1)(z - 1 + k\rho) + k\alpha = 0$$
+As derived above, for any $\tau \ge 2$ and $k=\rho=\alpha=1$, the roots escape the unit circle ($|z| \approx 1.151$). This explains why Condition D in Exp 1.2 caused immediate numerical divergence.
 
 ---
 

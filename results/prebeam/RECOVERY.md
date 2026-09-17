@@ -1,0 +1,7 @@
+Recovered session 01a0a17a-2497-7d62-84b9-db18aa259804. Baseline commit 660747f61a8a7e547c0ecd2c48c8883380a7d1f6; overlay commit 2620450. Prior session completed 38 tests, highest-precision smoke and supplied scout, and 256-step reference. Extended scout had input.yaml only and no surviving process. No paired replication/depth/real-data stage had completed. Prior outputs remain under results/async_dynamics; highest-precision scout and reference copied here verbatim for analysis. Original Fashion-MNIST training results preserved.
+
+A later conversation interruption ended the interactive depth64 process during seed1 (last logged completion at 159.7s; no completed seed1 output). Restarted unfinished cells under nohup/setsid, preserving the completed seed0 and the partial log depth64.log. New log: depth64-resumed.log.
+
+Fashion-MNIST five-seed validation started alongside resumed depth64 after the five-seed synthetic gate passed. Resource check: 24 CPUs, ~149 GB free host RAM, ~2.9/16.3 GB GPU memory used. The two stages have separate outputs; their overlapping runtimes are not isolated hardware benchmarks.
+
+Final outcome: all 21 cells / 148 mode runs complete; 39 tests pass; verdict GO. Shared checkout advanced externally to c1fef45 during work, capturing the experimental code and a tmp/ ignore rule. No commit command was issued by this assistant. Original computational source remains unchanged; see integrity.json.
