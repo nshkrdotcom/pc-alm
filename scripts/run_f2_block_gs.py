@@ -151,12 +151,14 @@ def main():
         return mse_ce_accuracy(logits(params, scales, skips, x, phi), y)
 
     def evaluate_model(params, X, Y):
+        X_dev = jnp.asarray(X)
+        Y_dev = jnp.asarray(Y)
         total_acc, total_loss, count = 0.0, 0.0, 0
-        chunk_size = 256
+        chunk_size = 512
         for i in range(0, len(X), chunk_size):
             stop = min(i + chunk_size, len(X))
-            xb = jnp.asarray(X[i:stop])
-            yb = jnp.asarray(Y[i:stop])
+            xb = X_dev[i:stop]
+            yb = Y_dev[i:stop]
             mse, ce, acc = eval_batch(params, xb, yb)
             n_samples = stop - i
             total_acc += float(acc) * n_samples
