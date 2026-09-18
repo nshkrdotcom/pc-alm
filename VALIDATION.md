@@ -65,7 +65,10 @@ To prevent spurious conclusions (such as confusing norm collapse or schedule art
 1. **Two-Axis Work & Latency Accounting:** All schedule comparisons must report both `total_layer_update_work` and `critical_path_steps`.
 2. **Canonical Protocol Precedence:** All official benchmark comparisons must cite and follow `PROTOCOLS.md` (Protocol F0).
 3. **Norm Sanity Checks:** Any reported increase in `grad_cos_to_bp` must be accompanied by non-collapsed `dual_norm` and `early_grad_norm_ratio`.
-4. **Seed Replication & Significance:** $\ge 5$ random seeds with 95% bootstrap confidence intervals. Differences $< 1.5\sigma$ are labeled `[not distinguishable from null]`.
+4. **Seed Replication & Significance:** $\ge 5$ random seeds with 95% bootstrap confidence intervals. Differences $< 1.5\sigma$ with overlapping CIs are labeled `[not distinguishable from null]`.
+5. **No Parity Loopholes (C1):** No ad-hoc tolerance window (e.g. within 1.0% of reference) may be used to claim parity when confidence intervals do not overlap or $Z \ge 1.5\sigma$.
+6. **Scale Requirement for `[established]` (C3):** Single-cell results (one depth, one dataset) are strictly `[suggestive]`. Promotion to `[established]` requires verification across $\ge 2$ depths ($L \in \{16, 32, 64\}$) or datasets.
+7. **Primary Evaluation (C1/C2):** Comparisons must lead with matched-work tables ($B=64$), not grid-quantized budget ratios. Work reduction factors must be expressed as interpolated ranges.
 
 ---
 

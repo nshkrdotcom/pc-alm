@@ -141,15 +141,17 @@ The maximum stable dual ascent step $\alpha_{\max}(\tau)$ is the critical value 
 | **$\tau = 16$** | $z^{17} - z^{16} + \alpha = 0$ | Complex conjugate pair exits unit circle | **$0.0952$** | $0.048\times$ |
 | **$\tau = 31$** | $z^{32} - z^{31} + \alpha = 0$ | Complex conjugate pair exits unit circle | **$0.0499$** | **$0.025\times$** |
 
-See generated root locus curve: [alpha_max_vs_tau.png](file:///home/home/p/g/n/pc-alm/theory/alpha_max_vs_tau.png).
+See generated root locus curve: [alpha_max_vs_tau.png](alpha_max_vs_tau.png).
 
 ### 4.2 Actionable Engineering Scaling Law
 
-1. **Decay Rule:** As delay $\tau$ increases, $\alpha_{\max}(\tau)$ decays asymptotically as $O(1/\tau)$. For small delays $\tau \in \{1, 2, 3\}$, each additional step of dual latency roughly halves the usable dual step size.
+1. **Decay Rule & Fitted Scaling Law:** As delay $\tau$ increases, $\alpha_{\max}(\tau)$ decays as $O(1/\tau)$. Specifically, for $\tau \ge 1$, the discrete boundary closely fits:
+   $$(\tau + 0.6)\,\alpha_{\max}(\tau) \approx 1.58 \approx \frac{\pi}{2}$$
+   consistent with the classical continuous delay margin $\omega_c \tau \approx \frac{\pi}{2}$.
 2. **Quantitative Prediction of Experiment 1.2 Divergence:**
    - In Experiment 1.2 (Condition D: Stale Own Dual), a 32-layer network had layer 0's dual delayed by the full depth $\tau = 31$.
    - The simulation ran with standard calibration $\alpha = 1.0$.
    - According to the exact table above, the maximum stable step size at $\tau = 31$ is **$\alpha_{\max}(31) = 0.0499$**.
-   - Because the operating point $\alpha = 1.0$ is **$20.0\times$ larger than the critical stability limit**, the discrete integrator eigenvalue modulus was $|z| \approx 1.15 \gg 1.0$.
+   - Because the operating point $\alpha = 1.0$ is **$20.0\times$ larger than the critical stability limit**, the discrete integrator eigenvalue modulus is $|z|_{\max} \approx 1.0747 > 1.0$ (with 32 roots distributed outside the unit disk).
    - This **quantitatively and analytically predicts** the immediate explosive divergence observed in Condition D ($\|\lambda\| \to \infty$) without relying on unvalidated qualitative narratives.
 

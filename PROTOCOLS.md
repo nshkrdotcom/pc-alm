@@ -14,21 +14,33 @@ To resolve sample-size artifacts, baseline strength inconsistencies (N1), and te
 | **Train Split** | 60,000 samples | Full canonical training set (prevents under-trained BP artifacts) |
 | **Test Split** | 10,000 samples | Binomial standard error $\le 0.46\%$ at $p \approx 0.70$ (enables sub-1% resolution) |
 | **Batch Size** | 64 | Matched across all methods |
-| **Epoch Count** | 10 epochs | 9,370 minibatches per training run |
-| **Architecture** | Depth $L=32$, Width $N=32$ | 31 hidden layers, 784 input, 10 output classes |
+| **Minibatch Count** | Exactly 937 batches/epoch | $60,000 // 64 = 937$ (remainder 32 dropped explicitly), totaling exactly 9,370 minibatches over 10 epochs |
+| **Minibatch Shuffling** | Enabled | Full permutation of training indices at the start of each epoch |
+| **Architecture** | Depth $L=32$, Width $N=32$ | 31 hidden layers (width 32), 784 input, 10 output classes |
 | **Activation** | ReLU | Standard nonlinear activation |
 | **Weight Optimizer** | Adam (`lr = 0.001`, $\beta_1=0.9, \beta_2=0.999$) | Matched across all methods |
 | **State LR ($\eta_h$)** | 0.057390 | Calibrated from `configs/eta_best_by_cell.csv` |
 | **AL Multipliers** | $\rho = 1.0, \alpha = 1.0$ | Standard augmented Lagrangian operating point |
 | **Seed Replications** | $\ge 5$ seeds ($S \in \{0, 1, 2, 3, 4\}$) | Minimum sample size for bootstrap confidence intervals |
 
-### Statistical Standards:
-- Every headline metric must report: **Mean ± SD** and **95% Bootstrap Confidence Intervals** (10,000 resamples).
+### Statistical Standards & Labeling Rules (C1):
+- Every metric must report: **Mean ± SD** and **95% Bootstrap Confidence Intervals** (10,000 resamples).
 - For any comparative claim between method $A$ and method $B$:
   $$\Delta = \mu_A - \mu_B, \quad \sigma_{\Delta} = \sqrt{\frac{\sigma_A^2}{N_A} + \frac{\sigma_B^2}{N_B}}, \quad Z = \frac{|\Delta|}{\sigma_{\Delta}}$$
-- If $Z < 1.5\sigma$, the difference must be explicitly labeled `[not distinguishable from null]`.
+- **Significance Labels**:
+  - `[not distinguishable from null]`: Assigned **if and only if** $Z < 1.5\sigma$ **AND** the 95% bootstrap confidence intervals overlap with the reference.
+  - `[statistically lower]`: Assigned when $Z \ge 1.5\sigma$ (or non-overlapping CIs) and $\mu_A < \mu_{\text{ref}}$.
+  - `[statistically higher]`: Assigned when $Z \ge 1.5\sigma$ (or non-overlapping CIs) and $\mu_A > \mu_{\text{ref}}$.
+- **PROHIBITION OF "PARITY" OVERRIDE**: Any ad-hoc tolerance band (e.g. `m_mean >= bp_mean - 0.01`) that re-labels statistically significant deficits as "parity" is **strictly prohibited**. When CIs do not overlap, methods are statistically distinct.
+- **PRIMARY COMPARISON**: The primary result is **matched-work comparison** at identical budget $B$ (e.g. Reverse GS vs Jacobi vs Forward GS at $B=64$). "Budget required to reach $X\%$" is secondary and must be reported as an interpolated range, not a discrete integer ratio.
 
-### Work & Latency Accounting Standards:
+### Operational Definitions of Methods (C4):
+- `sync_gs_pcalm` (Reverse Gauss-Seidel): Sequential coordinate sweep from output to input ($i = L-1, \dots, 0$).
+- `sync_gs_forward_pcalm` (Forward Gauss-Seidel): Sequential coordinate sweep from input to output ($i = 0, \dots, L-1$).
+- `random_order_gs` (Fixed-Permutation Gauss-Seidel): A single static random permutation of layers sampled once per seed and executed sequentially for every sweep and epoch. **Must NOT be referred to as asynchrony.**
+- `async_local_pcalm` (Asynchronous Coordinate Descent): Layer index sampled independently and uniformly at random at *every single coordinate update step*.
+
+### Work & Latency Accounting Standards (C2):
 Every schedule must be evaluated on the two physically meaningful axes:
 1. `total_layer_update_work`: Total coordinate primal updates executed across all layers ($W = \sum_t \sum_i \mathbb{I}(\text{layer } i \text{ updated at } t)$). For full sweeps: $W = B \cdot (L-1)$. Units: *layer updates*.
 2. `critical_path_steps`: Length of longest serial dependency chain ($T_{\text{crit}}$).
